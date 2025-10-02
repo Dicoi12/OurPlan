@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OurPlan.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-namespace OurPlan.Entity
+namespace OurPlan.DTO
 {
-    public class Event
+    public class EventModel
     {
         [Key]
         public int Id { get; set; }
@@ -23,10 +24,10 @@ namespace OurPlan.Entity
 
         [ForeignKey(nameof(User))]
         public int CreatedByUserId { get; set; }
+        public virtual User? User { get; set; }
 
         public bool IsShared { get; set; } = true;
-        
+
         public int? ReminderMinutesBefore { get; set; }
-        public virtual User? User { get; set; }
     }
 }
