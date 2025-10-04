@@ -1,2 +1,13 @@
 dotnet ef migrations add UserGroupAndEventMigration
 dotnet ef database update
+
+groupService 
+{
+interfata 
+-create 
+- update 
+- delete
+- getallgroups
+}
+
+dupa interfata si service merg in program.cs si fac legatura intre ele 
