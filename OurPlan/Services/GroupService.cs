@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using OurPlan.Data;
 using OurPlan.DTO;
@@ -65,17 +66,88 @@ namespace OurPlan.Services
 
         public async Task<ServiceResult<GroupModel>> DeleteGroup(int groupId)
         {
-            
-        }
-        
-        public async Task<ServiceResult<GroupModel>> UpdateGroup(GroupModel model)
-        {
-            
+            var result = new ServiceResult<GroupModel>();
+
+            var entity = _context.Groups.FirstOrDefault(e => e.Id == groupId);
+
+            if (entity == null)
+            {
+                result.ValidationMessage.Add("Group not found");
+                return result;
+            }
+
+            _context.Groups.Remove(entity);
+            await _context.SaveChangesAsync();
+
+            return result;
+
+
         }
 
-        public async Task<ServiceResult<List<GroupModel>>> GetAllGroups()
+        public ServiceResult<GroupModel> NoContent { get; set; }
+
+        public async Task<ServiceResult<GroupModel>> UpdateGroup(GroupModel model)
         {
-            
+
+            var result = new ServiceResult<GroupModel>();
+            var entity = _context.Groups.FirstOrDefault(e => e.Id == model.Id);
+
+            if (entity == null)
+            {
+                result.ValidationMessage.Add("Group not found");
+                return result;
+            }
+
+            try
+            {
+                entity.Name = model.Name;
+                entity.CreatedByUserId = model.CreatedByUserId;
+                entity.CreatedBy = model.CreatedBy;
+                entity.UserGroups = model.UserGropus;
+
+                _context.Groups.Update(entity);
+                await _context.SaveChangesAsync();
+                result.Result = model;
+
+            }
+            catch (Exception e)
+            {
+                
+                result.ValidationMessage.Add($"An error occurred while updating the group: {e.Message}");
+            }
+
+            return result;
+
+
+        }
+
+        public async Task<ServiceResult<List<GroupModel>>> GetGroupsForCurrentUser()
+        {
+            var result = new ServiceResult<List<GroupModel>>();
+
+            try
+            {
+                var currentuser = _userService.GetCurrentUser();
+                if (currentuser == null)
+                {
+                    result.ValidationMessage.Add("User not authenticated");
+                    return result;
+                }
+                
+                var groups = await _context.Groups.Include(x => x.UserGroups)
+                    .Where(x => x.CreatedByUserId == currentuser.Id)
+                    .Select(x => x.UserGroups)
+                    .ToListAsync();
+                result.Result =  _mapper.Map<List<GroupModel>>(groups);
+ 
+            }
+            catch (Exception e)
+            {
+                result.ValidationMessage.Add($"An error occurred while retrieving the groups: {e.Message}");
+                
+            }
+
+            return result;
         }
         
         
