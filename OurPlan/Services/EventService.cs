@@ -11,12 +11,12 @@ namespace OurPlan.Services
     public class EventService : IEventService
     {
         public readonly ApplicationDbContext _context;
-        public readonly IUserService _userService;
+        public readonly ICurrentUserService _currentUserService;
         public readonly IMapper _mapper;
-        public EventService(ApplicationDbContext context, IUserService userService, IMapper mapper)
+        public EventService(ApplicationDbContext context, ICurrentUserService userService, IMapper mapper)
         {
             _context = context;
-            _userService = userService;
+            _currentUserService = userService;
             _mapper = mapper;
         }
         public async Task<ServiceResult<EventModel>> CreateEvent(EventModel model)
@@ -24,14 +24,14 @@ namespace OurPlan.Services
             var result = new ServiceResult<EventModel>();
             try
             {
-                var currentUser = _userService.GetCurrentUser();
+                var currentUser = _currentUserService.UserId;
                 if (currentUser == null)
                 {
                     result.ValidationMessage.Add("User not authenticated");
                     return result;
                 }
 
-                model.CreatedByUserId = currentUser.Id;
+                model.CreatedByUserId = (int) currentUser;
                 _context.Events.Add(_mapper.Map<Event>(model));
 
                 await _context.SaveChangesAsync();
@@ -63,14 +63,14 @@ namespace OurPlan.Services
             ServiceResult<List<EventModel>> result = new();
             try
             {
-                var currentUser = _userService.GetCurrentUser();
+                var currentUser = _currentUserService.UserId;
                 if (currentUser == null)
                 {
                     result.ValidationMessage.Add("User not authenticated");
                     return result;
                 }
                 var events = await _context.Events.Include(x => x.User)
-                    .Where(e => e.CreatedByUserId == currentUser.Id)
+                    .Where(e => e.CreatedByUserId == currentUser)
                     .Select(e => new EventModel
                     {
                         Id = e.Id,

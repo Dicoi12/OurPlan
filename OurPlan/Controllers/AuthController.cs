@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using OurPlan.DTO;
 using OurPlan.Services.Interfaces;
@@ -16,6 +17,7 @@ namespace OurPlan.Controllers
             _userService = userService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public IActionResult Register(RegisterModel request)
         {
@@ -30,6 +32,7 @@ namespace OurPlan.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public IActionResult Login(LoginModel request)
         {
