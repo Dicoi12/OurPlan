@@ -13,14 +13,14 @@ namespace OurPlan.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
 
 
-        public UserService(ApplicationDbContext context, IConfiguration config, IHttpContextAccessor httpContextAccessor)
+        public UserService(ApplicationDbContext context, IConfiguration config, ICurrentUserService currentUserService)
         {
             _context = context;
             _config = config;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
         }
 
         public User Register(string username, string email, string password)
@@ -60,9 +60,10 @@ namespace OurPlan.Services
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.Username)
-            };
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Name, user.Username)
+    };
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -77,56 +78,5 @@ namespace OurPlan.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public User GetCurrentUser()
-        {
-            var bearerToken = GetBearerTokenFromHeader();
-            if (string.IsNullOrWhiteSpace(bearerToken))
-                throw new ArgumentException("Bearer token is required.");
-
-            // Remove "Bearer " prefix if present
-            var token = bearerToken.StartsWith("Bearer ") ? bearerToken.Substring(7) : bearerToken;
-
-            var jwtSettings = _config.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings["Issuer"],
-                ValidAudience = jwtSettings["Audience"],
-                IssuerSigningKey = key,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            };
-
-            try
-            {
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-                var userIdClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub);
-                if (userIdClaim == null)
-                    throw new Exception("User ID claim not found in token.");
-
-                int userId = int.Parse(userIdClaim.Value);
-                var user = _context.Users.SingleOrDefault(u => u.Id == userId);
-                if (user == null)
-                    throw new Exception("User not found.");
-
-                return user;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Invalid token.", ex);
-            }
-        }
-        private string? GetBearerTokenFromHeader()
-        {
-            var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault();
-            if (authHeader != null && authHeader.StartsWith("Bearer "))
-                return authHeader.Substring("Bearer ".Length);
-            return null;
-        }
     }
 }

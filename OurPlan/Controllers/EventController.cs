@@ -14,9 +14,9 @@ public class EventController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAllEvents()
+    public async Task<IActionResult> GetAll ()
     {
-        var events = _eventService.GetEventsForCurrentUser();
+        var events = await _eventService.GetEventsForCurrentUser();
         return Ok(events);
     }
 
