@@ -43,8 +43,9 @@ builder.Services.AddAuthorization();
 // ==================== AutoMapper & Services ====================
 builder.Services.AddAutoMapper(typeof(GenericProfile));
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddHttpContextAccessor();
 // ==================== Controllers with Global [Authorize] ====================
 builder.Services.AddControllers(config =>
