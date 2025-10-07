@@ -1,2 +1,2 @@
-dotnet ef migrations add UserGroupAndEventMigration
+dotnet ef migrations add GroupToken
 dotnet ef database update

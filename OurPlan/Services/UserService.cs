@@ -34,8 +34,23 @@ namespace OurPlan.Services
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
             };
+            
+            var group = new Group
+            {
+                Name = $"{username}'s Group",
+                CreatedByUserId = user.Id
+            };
+
+            var groupUser = new UserGroup
+            {
+                UserId = user.Id,
+                GroupId = group.Id,
+                Role = "Owner"
+            };
 
             _context.Users.Add(user);
+            _context.Groups.Add(group);
+            _context.UserGroups.Add(groupUser);
             _context.SaveChanges();
 
             return user;

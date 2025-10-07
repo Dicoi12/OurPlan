@@ -21,6 +21,7 @@ namespace OurPlan.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<UserGroup> UserGroups { get; set; }
+        public DbSet<GroupToken> GroupTokens { get; set; }
 
         public override int SaveChanges()
         {
