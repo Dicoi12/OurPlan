@@ -16,24 +16,23 @@ public class GroupController : ControllerBase
     }
 
     [HttpGet]
-
     public async Task<IActionResult> GetGroups()
     {
         var groups = await _groupService.GetGroupsForCurrentUser();
         return Ok(groups);
     }
-    
-    
-    [HttpGet]
 
+
+    [HttpGet]
+    [Route("GetAllGroups")]
     public async Task<ActionResult> GetAllGroups()
     {
         var result = await _groupService.GetAllGroups();
-        if(result.Result != null)
+        if (result.Result != null)
             return Ok(result.Result);
         return BadRequest();
     }
-    
+
 
     [HttpPost]
 
@@ -61,9 +60,9 @@ public class GroupController : ControllerBase
     {
         var group = _groupService.DeleteGroup(groupId);
         if (group.Result != null) ;
-            return Ok(group.Result);
+        return Ok(group.Result);
         return BadRequest();
     }
 
-    
-} 
+
+}
