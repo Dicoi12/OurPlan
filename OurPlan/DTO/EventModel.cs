@@ -6,7 +6,7 @@ namespace OurPlan.DTO
 {
     public class EventModel
     {
-        [Key]
+        
         public int Id { get; set; }
 
         [Required]
@@ -22,7 +22,7 @@ namespace OurPlan.DTO
 
         public string? Location { get; set; }
 
-        [ForeignKey(nameof(User))]
+     
         public int CreatedByUserId { get; set; }
         public virtual User? User { get; set; }
 

@@ -15,5 +15,7 @@
 
         public bool IsSuccesful { get; private set; }
         public List<string> ValidationMessage { get; set; } = new();
+        
+       
     }
 }

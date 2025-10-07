@@ -10,6 +10,10 @@ namespace OurPlan.Helpers
         public GenericProfile()
         {
             CreateMap<Event, EventModel>().ReverseMap();
+            CreateMap<Group, GroupModel>().ReverseMap();
+            CreateMap<User, UserModel>().ReverseMap();
+
         }
+        
     }
 }
