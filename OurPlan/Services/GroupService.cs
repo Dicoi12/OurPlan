@@ -14,13 +14,13 @@ namespace OurPlan.Services
         public readonly ICurrentUserService _currentUserService;
         public readonly IUserService _userService;
         public readonly IMapper _mapper;
-        private IGroupService _groupServiceImplementation;
 
-        public GroupService(ApplicationDbContext context, IUserService userService, IMapper mapper)
+        public GroupService(ApplicationDbContext context, ICurrentUserService currentUserService,IUserService userService, IMapper mapper)
         {
             _context = context;
             _userService = userService;
             _mapper = mapper;
+            _currentUserService = currentUserService;
         }
 
         public async Task<ServiceResult<GroupModel>> CreateGroup(GroupModel model)
@@ -100,7 +100,6 @@ namespace OurPlan.Services
             {
                 entity.Name = model.Name;
                 entity.CreatedByUserId = model.CreatedByUserId;
-                entity.CreatedBy = model.CreatedBy;
                 entity.UserGroups = model.UserGropus;
 
                 _context.Groups.Update(entity);

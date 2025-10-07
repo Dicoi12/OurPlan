@@ -1,6 +1,7 @@
 using OurPlan.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OurPlan.DTO
 {
@@ -11,7 +12,7 @@ namespace OurPlan.DTO
 
         public string Name { get; set; } = "Couple";
         
-        public User? CreatedBy { get; set; }
+        public UserModel? CreatedBy { get; set; }
         
         public int CreatedByUserId { get; set; }
 

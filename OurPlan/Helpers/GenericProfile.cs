@@ -11,6 +11,8 @@ namespace OurPlan.Helpers
         {
             CreateMap<Event, EventModel>().ReverseMap();
             CreateMap<Group, GroupModel>().ReverseMap();
+            CreateMap<User, UserModel>().ReverseMap();
+
         }
         
     }
