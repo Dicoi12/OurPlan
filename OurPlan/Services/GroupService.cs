@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using OurPlan.Data;
 using OurPlan.DTO;
@@ -7,12 +6,12 @@ using OurPlan.Entity;
 using OurPlan.Helpers;
 using OurPlan.Services.Interfaces;
 
-
 namespace OurPlan.Services
 {
     public class GroupService : IGroupService
     {
         public readonly ApplicationDbContext _context;
+        public readonly ICurrentUserService _currentUserService;
         public readonly IUserService _userService;
         public readonly IMapper _mapper;
         private IGroupService _groupServiceImplementation;
@@ -30,21 +29,21 @@ namespace OurPlan.Services
 
             try
             {
-                var currentUser = _userService.GetCurrentUser();
+                var currentUser = _currentUserService.UserId;
                 if (currentUser == null)
                 {
                     result.ValidationMessage.Add("User not authenticated");
                     return result;
                 }
 
-                model.CreatedByUserId = currentUser.Id;
+                model.CreatedByUserId = (int) currentUser;
                 var entity = _mapper.Map<Group>(model);
                 _context.Groups.Add(entity);
                 await _context.SaveChangesAsync();
 
                 var userGroup = new UserGroup
                 {
-                    UserId = currentUser.Id,
+                    UserId = model.CreatedByUserId,
                     GroupId = entity.Id
                 };
 
@@ -84,8 +83,7 @@ namespace OurPlan.Services
 
         }
 
-        public ServiceResult<GroupModel> NoContent { get; set; }
-
+        
         public async Task<ServiceResult<GroupModel>> UpdateGroup(GroupModel model)
         {
 
@@ -127,7 +125,7 @@ namespace OurPlan.Services
 
             try
             {
-                var currentuser = _userService.GetCurrentUser();
+                var currentuser = _currentUserService.UserId;
                 if (currentuser == null)
                 {
                     result.ValidationMessage.Add("User not authenticated");
@@ -135,7 +133,8 @@ namespace OurPlan.Services
                 }
                 
                 var groups = await _context.Groups.Include(x => x.UserGroups)
-                    .Where(x => x.CreatedByUserId == currentuser.Id)
+                    .ThenInclude(x => x.User)
+                    .Where(x => x.CreatedByUserId == currentuser)
                     .Select(x => x.UserGroups)
                     .ToListAsync();
                 result.Result =  _mapper.Map<List<GroupModel>>(groups);
@@ -145,6 +144,27 @@ namespace OurPlan.Services
             {
                 result.ValidationMessage.Add($"An error occurred while retrieving the groups: {e.Message}");
                 
+            }
+
+            return result;
+        }
+
+        public async Task<ServiceResult<List<GroupModel>>> GetAllGroups()
+        {
+            var result = new ServiceResult<List<GroupModel>>();
+
+            try
+            {
+                var groups = await _context.Groups.Include(x => x.UserGroups)
+                    .ThenInclude(x => x.User)
+                    .ToListAsync();
+                
+                result.Result = _mapper.Map<List<GroupModel>>(groups);
+            }
+            catch (Exception ex)
+            {
+                result.ValidationMessage.Add($"An error occurred while retrieving the groups: {ex.Message}");
+              
             }
 
             return result;
