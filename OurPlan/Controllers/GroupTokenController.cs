@@ -27,8 +27,31 @@ namespace OurPlan.Controllers
                 return Ok(result.Result);
             return BadRequest();
         }
-        
+
+        [HttpPost("join")]
+        public async Task<IActionResult> JoinGroupByToken([FromBody] string token)
+        {
+            var result = await _groupTokenService.JoinGroupByToken(token);
+
+            if (result.Result != null)
+                return Ok(new { message = "User successfully joined the group" });
+            else
+                return BadRequest(result.ValidationMessage);
+        }
+
+
+        [HttpGet("check/{groupId}")]
+        public async Task<IActionResult> CheckUser(int groupId)
+        {
+            var result = await _groupTokenService.CheckUser(groupId);
             
+            if (result.ValidationMessage.Any())
+                return BadRequest(result.ValidationMessage);
+            
+            return Ok(new {isInGroup = result.Result});
+            
+        }
+        
 
 
     }
