@@ -15,3 +15,5 @@ Sa verifici daca utilizatorul care a generat tokenul face parte din group. Funct
 Pe langa asta verifici sa nu fie alte tokenuri valide la momentul generarii. Daca este unul valid, sters si adaugat cel nou.
 
 Functie noua ce pirmeste tokenul-ul si adauga userul curent in group.
+\\
+
