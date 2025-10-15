@@ -20,7 +20,7 @@ namespace OurPlan.Services
             _context = context;
             _mapper = mapper;
             _currentUserService = currentUserService;
-            
+
         }
 
         public async Task<ServiceResult<GroupTokenModel>> GenerateToken(int groupId)
@@ -35,7 +35,7 @@ namespace OurPlan.Services
                     result.ValidationMessage.Add("Group not found");
                     return result;
                 }
-                
+
                 var checkUserInGroup = await CheckUser(groupId);
                 if (!checkUserInGroup.Result)
                 {
@@ -47,7 +47,7 @@ namespace OurPlan.Services
                 await RemoveValidTokens(groupId);
 
                 var token = GenerateTokenString(8);
-                    
+
 
                 var entity = new GroupToken
                 {
@@ -72,7 +72,7 @@ namespace OurPlan.Services
             return result;
         }
 
-     
+
 
 
 
@@ -92,17 +92,17 @@ namespace OurPlan.Services
 
                 bool InGroup = await _context.UserGroups
                     .AnyAsync(e => e.GroupId == groupId && e.UserId == currentUserId);
-                
-                if(!InGroup) 
+
+                if (!InGroup)
                     result.ValidationMessage.Add("User does not belong to this group");
                 result.Result = InGroup;
             }
-            
+
             catch (Exception e)
             {
                 result.ValidationMessage.Add($"An error occurred while checking user: {e.Message}");
                 result.Result = false;
-                
+
             }
             return result;
         }
@@ -121,7 +121,7 @@ namespace OurPlan.Services
                     result.Result = false;
                     return result;
                 }
-                
+
                 var groupToken = await _context.GroupTokens
                     .FirstOrDefaultAsync(x => x.Token == token);
 
@@ -138,7 +138,7 @@ namespace OurPlan.Services
                     result.Result = false;
                     return result;
                 }
-                
+
                 var group = await _context.Groups.FirstOrDefaultAsync(x => x.Id == groupToken.GroupId);
                 if (group == null)
                 {
@@ -146,7 +146,7 @@ namespace OurPlan.Services
                     result.Result = false;
                     return result;
                 }
-                
+
                 var member = await _context.UserGroups
                     .AnyAsync(x => x.GroupId == group.Id && x.UserId == currentUserId);
                 if (member)
@@ -161,10 +161,11 @@ namespace OurPlan.Services
                     GroupId = group.Id,
                     UserId = (int)currentUserId
                 };
-                
+                //mai trebuie delete la token
+
                 _context.UserGroups.Add(userGroup);
                 await _context.SaveChangesAsync();
-                
+
                 result.Result = true;
             }
             catch (Exception e)
@@ -178,7 +179,7 @@ namespace OurPlan.Services
         private async Task RemoveValidTokens(int groupId)
         {
             var date = DateTime.UtcNow;
-            
+
             var existingGroup = await _context.GroupTokens
                 .Where(x => x.GroupId == groupId && x.ExpiryDate < date)
                 .ToListAsync();
@@ -189,8 +190,8 @@ namespace OurPlan.Services
                 await _context.SaveChangesAsync();
             }
         }
-        
-        private static string GenerateTokenString(int length )
+
+        private static string GenerateTokenString(int length)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var bytes = new byte[length];
@@ -200,5 +201,5 @@ namespace OurPlan.Services
         }
 
     }
-    
+
 }
