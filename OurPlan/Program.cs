@@ -15,8 +15,23 @@ using AutoMapper;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==================== Database ====================
+// decode connection string if it's base64, otherwise use raw value
+var rawConn = builder.Configuration.GetConnectionString("DefaultConnection");
+string connectionString;
+
+try
+{
+    var bytes = Convert.FromBase64String(rawConn);
+    connectionString = Encoding.UTF8.GetString(bytes);
+}
+catch (FormatException)
+{
+    // nu e Base64 — folosește valoarea originală
+    connectionString = rawConn;
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // ==================== JWT Authentication ====================
 var jwtSettings = builder.Configuration.GetSection("Jwt");
