@@ -39,20 +39,5 @@ namespace OurPlan.Controllers
                 return BadRequest(result.ValidationMessage);
         }
 
-
-        [HttpGet("check/{groupId}")]
-        public async Task<IActionResult> CheckUser(int groupId)
-        {
-            var result = await _groupTokenService.CheckUser(groupId);
-            
-            if (result.ValidationMessage.Any())
-                return BadRequest(result.ValidationMessage);
-            
-            return Ok(new {isInGroup = result.Result});
-            
-        }
-        
-
-
     }
 }

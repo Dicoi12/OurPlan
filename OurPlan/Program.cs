@@ -97,6 +97,23 @@ builder.Services.AddSwaggerGen(c =>
 // ==================== Build & Configure Middleware ====================
 var app = builder.Build();
 
+// Apply any pending EF Core migrations at startup
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var db = services.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate(); // runs pending migrations
+        logger.LogInformation("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while migrating the database.");
+        throw;
+    }
+}
 // Swagger UI pentru toate mediile (nu doar Development)
 
 

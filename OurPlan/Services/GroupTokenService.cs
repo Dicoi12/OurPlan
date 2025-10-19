@@ -62,7 +62,6 @@ namespace OurPlan.Services
                 result.Result = _mapper.Map<GroupTokenModel>(entity);
 
 
-
             }
             catch (Exception e)
             {
@@ -132,7 +131,7 @@ namespace OurPlan.Services
                     return result;
                 }
 
-                if (groupToken.ExpiryDate < DateTime.UtcNow)
+                if (groupToken.ExpiryDate < DateTime.Now)
                 {
                     result.ValidationMessage.Add("Token expired");
                     result.Result = false;
@@ -151,7 +150,7 @@ namespace OurPlan.Services
                     .AnyAsync(x => x.GroupId == group.Id && x.UserId == currentUserId);
                 if (member)
                 {
-                    result.ValidationMessage.Add("User already in this this group");
+                    result.ValidationMessage.Add("User already in this group");
                     result.Result = false;
                     return result;
                 }
@@ -161,8 +160,8 @@ namespace OurPlan.Services
                     GroupId = group.Id,
                     UserId = (int)currentUserId
                 };
-                //mai trebuie delete la token
 
+                _context.GroupTokens.Remove(groupToken);
                 _context.UserGroups.Add(userGroup);
                 await _context.SaveChangesAsync();
 
