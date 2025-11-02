@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import fetchApi from "../stores/fetch";
-
+import type { IUserModel } from "../interfaces";
 
 export const useUserStore = defineStore("userStore", {
   state: (): {
@@ -10,23 +10,20 @@ export const useUserStore = defineStore("userStore", {
     return {
       token: localStorage.getItem('token') || undefined,
       userData: {
-        id: 0,
-        userName: "",
-        email: null,
-        phone: null,
-        hash: "",
-        salt: "",
-        role: 0,
+        Id: 0,
+        Username: "",
+        Email: "",
+        CreatedAt: new Date(),
       },
     };
   },
   actions: {
     async login(
-      userName: string,
+      email: string,
       password?: string
     ): Promise<IUserModel | undefined> {
       const payload = {
-        UserName: userName,
+        Email: email,
         Password: password,
       };
       try {
@@ -35,31 +32,18 @@ export const useUserStore = defineStore("userStore", {
         localStorage.setItem('token', data.id);
         return data as IUserModel;
       } catch (error) {
-        if (userName == "dariusd2" && password == "123") {
-          this.userData = {
-            id: 200,
-            userName: 'dariusd',
-            email: 'wink@ceva.com',
-            phone: '0742123212',
-            hash: "",
-            salt: "",
-            role: UserRoleEnum.Administrator,
-          };
-        }
-        console.error("Error adding objective:", error);
+        console.error("Error logging in:", error);
       }
     },
     async signup(
       userName: string,
       password?: string,
-      email?: string,
-      phone?: string
+      email?: string
     ) {
       const payload = {
         UserName: userName,
         Password: password,
-        email: email,
-        phone: phone,
+        email: email
       };
       try {
         const data = await fetchApi("User/SignUp", "POST", payload);
@@ -71,7 +55,7 @@ export const useUserStore = defineStore("userStore", {
     async changePassword(oldPassword: string, newPassword: string) {
       try {
         let payload = {
-          userId: this.userData.id,
+          userId: this.userData.Id,
           oldPassword: oldPassword,
           newPassword: newPassword
         };
@@ -84,17 +68,13 @@ export const useUserStore = defineStore("userStore", {
     },
     logout() {
       this.userData = {
-        id: 0,
-        userName: "",
-        email: null,
-        phone: null,
-        hash: "",
-        salt: "",
-        role: 0,
+        Id: 0,
+        Username: "",
+        Email: "",
+        CreatedAt: new Date(),
       };
       localStorage.removeItem('token');
     },
   },
   getters: {},
-  persist: true,
 });
