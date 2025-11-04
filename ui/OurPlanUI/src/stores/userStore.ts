@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import fetchApi from "../stores/fetch";
 import type { IUserModel } from "../interfaces";
+import type { IToken } from "../types/InteralInterfaces";
 
 export const useUserStore = defineStore("userStore", {
   state: (): {
@@ -21,16 +22,15 @@ export const useUserStore = defineStore("userStore", {
     async login(
       email: string,
       password?: string
-    ): Promise<IUserModel | undefined> {
+    ): Promise<IToken | undefined> {
       const payload = {
         Email: email,
         Password: password,
       };
       try {
-        const data = await fetchApi("User/Login", "POST", payload);
-        this.userData = data as IUserModel;
-        localStorage.setItem('token', data.id);
-        return data as IUserModel;
+        const data = await fetchApi("Auth/Login", "POST", payload);
+        localStorage.setItem('token', data.token as string);
+        return data as IToken;
       } catch (error) {
         console.error("Error logging in:", error);
       }
@@ -46,7 +46,7 @@ export const useUserStore = defineStore("userStore", {
         email: email
       };
       try {
-        const data = await fetchApi("User/SignUp", "POST", payload);
+        const data = await fetchApi("Auth/Register", "POST", payload);
         return data;
       } catch (error) {
         console.error("Error creating user:", error);

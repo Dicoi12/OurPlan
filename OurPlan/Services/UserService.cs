@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using OurPlan.Data;
 using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace OurPlan.Services
 {
@@ -23,7 +24,7 @@ namespace OurPlan.Services
             _currentUserService = currentUserService;
         }
 
-        public User Register(string username, string email, string password)
+        public async Task<User> Register(string username, string email, string password)
         {
             if (_context.Users.Any(u => u.Email == email))
                 throw new Exception("Email already exists");
@@ -34,7 +35,10 @@ namespace OurPlan.Services
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
             };
-            
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
             var group = new Group
             {
                 Name = $"{username}'s Group",
@@ -48,10 +52,9 @@ namespace OurPlan.Services
                 Role = "Owner"
             };
 
-            _context.Users.Add(user);
             _context.Groups.Add(group);
             _context.UserGroups.Add(groupUser);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return user;
         }

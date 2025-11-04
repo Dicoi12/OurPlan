@@ -11,7 +11,7 @@ export interface IGroupModel {
   Id: number;
   Name: string;
   CreatedByUserId: number;
-  UserGropus: ICollection<UserGroup>;
+  UserGropus: UserGroup[];
 }
 
 export interface IGroupTokenModel {

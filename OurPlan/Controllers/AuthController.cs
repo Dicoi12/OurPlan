@@ -23,8 +23,8 @@ namespace OurPlan.Controllers
         {
             try
             {
-                var user = _userService.Register(request.Username, request.Email, request.Password);
-                return Ok(new { message = "User registered successfully", user.Id, user.Email });
+                _userService.Register(request.Username, request.Email, request.Password);
+                return Ok(new { message = "User registered successfully" });
             }
             catch (Exception ex)
             {
