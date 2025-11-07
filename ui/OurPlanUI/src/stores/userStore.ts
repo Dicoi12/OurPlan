@@ -29,7 +29,7 @@ export const useUserStore = defineStore("userStore", {
       };
       try {
         const data = await fetchApi("Auth/Login", "POST", payload);
-        localStorage.setItem('token', data.token as string);
+        localStorage.setItem('token', data.token as string); //de mutat in cookie
         return data as IToken;
       } catch (error) {
         console.error("Error logging in:", error);

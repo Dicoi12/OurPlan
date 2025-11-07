@@ -10,6 +10,11 @@ const router = createRouter({
       path: "/login",
       component: defineAsyncComponent(() => import("./views/LoginPage.vue")),
     },
+    {
+      path:"/groups",
+      component: defineAsyncComponent(() => import("./views/GroupsPage.vue")),
+      meta: { requiresAuth: true },
+    }
   ],
 });
 router.beforeEach((to, from, next) => {

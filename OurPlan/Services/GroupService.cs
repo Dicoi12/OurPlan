@@ -15,7 +15,7 @@ namespace OurPlan.Services
         public readonly IUserService _userService;
         public readonly IMapper _mapper;
 
-        public GroupService(ApplicationDbContext context, ICurrentUserService currentUserService,IUserService userService, IMapper mapper)
+        public GroupService(ApplicationDbContext context, ICurrentUserService currentUserService, IUserService userService, IMapper mapper)
         {
             _context = context;
             _userService = userService;
@@ -36,7 +36,7 @@ namespace OurPlan.Services
                     return result;
                 }
 
-                model.CreatedByUserId = (int) currentUser;
+                model.CreatedByUserId = (int)currentUser;
                 var entity = _mapper.Map<Group>(model);
                 _context.Groups.Add(entity);
                 await _context.SaveChangesAsync();
@@ -57,7 +57,7 @@ namespace OurPlan.Services
             catch (Exception ex)
             {
                 result.ValidationMessage.Add($"An error occurred while creating the event: {ex.Message}");
-                
+
             }
 
             return result;
@@ -83,7 +83,7 @@ namespace OurPlan.Services
 
         }
 
-        
+
         public async Task<ServiceResult<GroupModel>> UpdateGroup(GroupModel model)
         {
 
@@ -109,7 +109,7 @@ namespace OurPlan.Services
             }
             catch (Exception e)
             {
-                
+
                 result.ValidationMessage.Add($"An error occurred while updating the group: {e.Message}");
             }
 
@@ -118,9 +118,9 @@ namespace OurPlan.Services
 
         }
 
-        public async Task<ServiceResult<List<GroupModel>>> GetGroupsForCurrentUser()
+        public async Task<ServiceResult<GroupModel>> GetGroupsForCurrentUser()
         {
-            var result = new ServiceResult<List<GroupModel>>();
+            var result = new ServiceResult<GroupModel>();
 
             try
             {
@@ -130,19 +130,17 @@ namespace OurPlan.Services
                     result.ValidationMessage.Add("User not authenticated");
                     return result;
                 }
-                
-                var groups = await _context.Groups.Include(x => x.UserGroups)
-                    .ThenInclude(x => x.User)
-                    .Where(x => x.CreatedByUserId == currentuser)
-                    .Select(x => x.UserGroups)
-                    .ToListAsync();
-                result.Result =  _mapper.Map<List<GroupModel>>(groups);
- 
+
+                var groups = await _context.UserGroups.Include(x => x.Group)
+                    .Select(x => x.Group)
+                    .FirstOrDefaultAsync();// doar pentru primul
+                result.Result = _mapper.Map<GroupModel>(groups);
+
             }
             catch (Exception e)
             {
                 result.ValidationMessage.Add($"An error occurred while retrieving the groups: {e.Message}");
-                
+
             }
 
             return result;
@@ -157,21 +155,21 @@ namespace OurPlan.Services
                 var groups = await _context.Groups.Include(x => x.UserGroups)
                     .ThenInclude(x => x.User)
                     .ToListAsync();
-                
+
                 result.Result = _mapper.Map<List<GroupModel>>(groups);
             }
             catch (Exception ex)
             {
                 result.ValidationMessage.Add($"An error occurred while retrieving the groups: {ex.Message}");
-              
+
             }
 
             return result;
         }
-        
-        
-        
-        
-        
+
+
+
+
+
     }
 }

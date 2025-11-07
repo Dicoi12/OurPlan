@@ -1,5 +1,5 @@
 <template>
-  <div>First template</div>
+  <!-- <div>First template</div> -->
   <router-view class="fadein animation-duration-300"> </router-view>
 </template>
 

@@ -1,12 +1,10 @@
-﻿using OurPlan.Entity;
+﻿using Microsoft.IdentityModel.Tokens;
+using OurPlan.Data;
+using OurPlan.Entity;
 using OurPlan.Services.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using OurPlan.Data;
-using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 
 namespace OurPlan.Services
 {
@@ -39,21 +37,7 @@ namespace OurPlan.Services
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            var group = new Group
-            {
-                Name = $"{username}'s Group",
-                CreatedByUserId = user.Id
-            };
 
-            var groupUser = new UserGroup
-            {
-                UserId = user.Id,
-                GroupId = group.Id,
-                Role = "Owner"
-            };
-
-            _context.Groups.Add(group);
-            _context.UserGroups.Add(groupUser);
             await _context.SaveChangesAsync();
 
             return user;

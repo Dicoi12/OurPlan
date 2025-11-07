@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OurPlan.DTO;
 using OurPlan.Services.Interfaces;
 
 namespace OurPlan.Controllers;
@@ -46,7 +47,7 @@ public class GroupController : ControllerBase
 
     [HttpPut]
 
-    public IActionResult UpdateGroup([FromBody] DTO.GroupModel model)
+    public IActionResult UpdateGroup([FromBody] GroupModel model)
     {
         var group = _groupService.UpdateGroup(model);
         if (group.Result != null)
