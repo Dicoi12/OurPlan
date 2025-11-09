@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import fetchApi from "../stores/fetch";
 import type { IUserModel } from "../interfaces";
 import type { IToken } from "../types/InteralInterfaces";
+import { getCookie } from "./helper";
 
 export const useUserStore = defineStore("userStore", {
   state: (): {
@@ -9,7 +10,7 @@ export const useUserStore = defineStore("userStore", {
     userData: IUserModel;
   } => {
     return {
-      token: localStorage.getItem('token') || undefined,
+      token: getCookie("token"),
       userData: {
         Id: 0,
         Username: "",
@@ -17,6 +18,9 @@ export const useUserStore = defineStore("userStore", {
         CreatedAt: new Date(),
       },
     };
+  },
+  getters: {
+    isAuthenticated: (state) => !!state.token,
   },
   actions: {
     async login(
@@ -29,8 +33,10 @@ export const useUserStore = defineStore("userStore", {
       };
       try {
         const data = await fetchApi("Auth/Login", "POST", payload);
-        localStorage.setItem('token', data.token as string); //de mutat in cookie
-        return data as IToken;
+        document.cookie = `token=${data.token}; path=/; max-age=3600; samesite=strict`;
+        console.log("Token set in cookie:", document.cookie);
+        this.syncTokenFromCookie();
+        return data;
       } catch (error) {
         console.error("Error logging in:", error);
       }
@@ -75,6 +81,9 @@ export const useUserStore = defineStore("userStore", {
       };
       localStorage.removeItem('token');
     },
+     syncTokenFromCookie() {
+      this.token = getCookie('token') || undefined;
+    },
+
   },
-  getters: {},
 });
