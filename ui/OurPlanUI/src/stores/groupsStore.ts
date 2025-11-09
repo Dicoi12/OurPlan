@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import fetchApi from "../stores/fetch";
 import type { IGroupModel } from "../interfaces";
+import type { IServiceResult } from "../types/InteralInterfaces";
 
 export const useGroupsStore = defineStore("groupsStore", {
   state: (): {
@@ -14,7 +15,8 @@ export const useGroupsStore = defineStore("groupsStore", {
     async getUserGroup(): Promise<IGroupModel | undefined> {
       try {
         const data = await fetchApi("Group", "GET");
-        this.group = data as IGroupModel;
+        var rez = data as IServiceResult<IGroupModel | undefined>;
+        this.group = rez.result;
         return this.group;
       } catch (error) {
         console.error("Error logging in:", error);

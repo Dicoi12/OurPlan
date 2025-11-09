@@ -12,14 +12,12 @@ namespace OurPlan.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
-        private readonly ICurrentUserService _currentUserService;
 
 
-        public UserService(ApplicationDbContext context, IConfiguration config, ICurrentUserService currentUserService)
+        public UserService(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
-            _currentUserService = currentUserService;
         }
 
         public async Task<User> Register(string username, string email, string password)
