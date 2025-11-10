@@ -32,7 +32,7 @@ namespace OurPlan.Services
                 }
 
                 model.CreatedByUserId = (int) currentUser;
-                _context.Events.Add(_mapper.Map<Event>(model));
+                _context.Events.Add(_mapper.Map<Event>(model));   
 
                 await _context.SaveChangesAsync();
 
