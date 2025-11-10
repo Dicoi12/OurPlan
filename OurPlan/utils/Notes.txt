@@ -1,17 +1,2 @@
-groupService 
-{
-interfata 
--create 
-- update 
-- delete
-- getallgroups
-}
-
-dupa interfata si service merg in program.cs si fac legatura intre ele 
-
-
-Token-ul sa aiba maxim 8 caractere.
-Sa verifici daca utilizatorul care a generat tokenul face parte din group. Functie diferita de verificare a utlizatorului in serviciu.
-Pe langa asta verifici sa nu fie alte tokenuri valide la momentul generarii. Daca este unul valid, sters si adaugat cel nou.
-
-Functie noua ce pirmeste tokenul-ul si adauga userul curent in group.
+Ne trebuie o functie care aduce toate evenimentele pentru toti membrii unui grup.
+Primesti grup id si returnezi toate evenimentele din ziua curenta. Fara minute/ore.

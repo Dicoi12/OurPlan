@@ -131,7 +131,7 @@ namespace OurPlan.Services
                     return result;
                 }
 
-                var groups = await _context.UserGroups.Include(x => x.Group)
+                var groups = await _context.UserGroups.Include(x => x.Group).Where(x => x.UserId == currentuser)
                     .Select(x => x.Group)
                     .FirstOrDefaultAsync();// doar pentru primul
                 result.Result = _mapper.Map<GroupModel>(groups);

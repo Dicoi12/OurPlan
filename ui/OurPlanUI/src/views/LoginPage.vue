@@ -14,7 +14,7 @@
             />
           </div>
           <div class="input-group">
-            <label for="password">Parolă</label>
+            <label for="password">Password</label>
             <InputText
               v-model="password"
               type="password"
@@ -27,17 +27,17 @@
             class="my-2 text-white font-xl cursor-pointer"
             @click="toggleForm"
           >
-            Crează un cont nou...
+            Create new account...
           </label>
         </div>
 
         <div v-else>
           <div class="input-group">
-            <label for="username">Utilizator</label>
+            <label for="username">Username</label>
             <InputText
               v-model="newUsername"
               required
-              placeholder="Alege un nume de utilizator"
+              placeholder="Choose a username"
             />
           </div>
           <div class="input-group">
@@ -46,24 +46,24 @@
               v-model="email"
               type="email"
               required
-              placeholder="Introdu email-ul tău"
+              placeholder="Email"
             />
           </div>
           <div class="input-group">
-            <label for="password">Parolă</label>
+            <label for="password">Password</label>
             <InputText
               v-model="newPassword"
               type="password"
               required
-              placeholder="Alege o parolă"
+              placeholder="Password"
             />
           </div>
-          <button type="submit" class="login-button" >Înregistrează-te</button>
+          <button type="submit" class="login-button" >Register</button>
           <label
             class="my-2 text-white font-xl cursor-pointer"
             @click="toggleForm"
           >
-            Ai deja un cont? Conectează-te aici.
+            If you have an account, login...
           </label>
         </div>
       </form>
