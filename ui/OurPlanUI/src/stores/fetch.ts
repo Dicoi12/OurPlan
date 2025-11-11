@@ -1,3 +1,5 @@
+import { getCookie } from "./helper";
+
 const BASE_URL = "https://localhost:7278/api";
 /**
  * Funcția pentru a construi query params dintr-un obiect payload.
@@ -43,7 +45,7 @@ const fetchApi = async (
   if (!isFormData) headers["Content-Type"] = "application/json";
   headers["Ngrok-Skip-Browser-Warning"] = "true";
    // ✅ Adaugă tokenul dacă există
-  const token = localStorage.getItem('token');
+  const token = getCookie('token');
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
