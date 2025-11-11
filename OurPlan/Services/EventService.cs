@@ -19,6 +19,69 @@ namespace OurPlan.Services
             _currentUserService = userService;
             _mapper = mapper;
         }
+
+        public async Task<ServiceResult<List<EventModel>>> GetEventsForGroup(int  groupId)
+        {
+            var result = new ServiceResult<List<EventModel>>();
+
+            try
+            {
+                var currentUser = _currentUserService.UserId;
+                if (currentUser == null)
+                {
+                    result.ValidationMessage.Add("User not authenticated");
+                    return result;
+                }
+
+                var memberGroup = await _context.UserGroups
+                    .AnyAsync(g => g.UserId == currentUser && g.GroupId == groupId);
+                if (!memberGroup)
+                {
+                    result.ValidationMessage.Add("Nu ai permisiunea sa vezi evenimentele acestui grup");
+                    return result;
+                }
+
+                var utcNow = DateTime.UtcNow;
+                var startOfDay = utcNow.Date;
+                var endOfDay = startOfDay.AddDays(1);
+
+                var events = await (
+                    from e in _context.Events
+                    join f in _context.UserGroups on e.CreatedByUserId equals f.UserId
+                    where f.GroupId == groupId
+                          && (
+                              (e.StartDate >= startOfDay && e.StartDate <= endOfDay)
+                              || (e.EndDate >= startOfDay && e.EndDate <= endOfDay)
+                              || (e.StartDate <= startOfDay && e.EndDate >= endOfDay)
+                          )
+
+                    select new EventModel
+                    {
+                        Id = e.Id,
+                        Title = e.Title,
+                        Description = e.Description,
+                        StartDate = e.StartDate,
+                        EndDate = e.EndDate,
+                        Location = e.Location,
+                        IsShared = e.IsShared,
+                        ReminderMinutesBefore = e.ReminderMinutesBefore,
+                        CreatedByUserId = e.CreatedByUserId
+
+                    }
+                ).ToListAsync();
+
+                result.Result = events;
+
+            }
+
+            catch (Exception ex)
+            {
+                result.ValidationMessage.Add($"An error occurred while fetching group events: {ex.Message}");
+            }
+            return result;
+
+        }
+        
         public async Task<ServiceResult<EventModel>> CreateEvent(EventModel model)
         {
             var result = new ServiceResult<EventModel>();

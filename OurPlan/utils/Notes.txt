@@ -1,5 +1,5 @@
 Ne trebuie o functie care aduce toate evenimentele pentru toti membrii unui grup.
-Primesti grup id si returnezi toate evenimentele din ziua curenta. Fara minute/ore.\
+Primesti grup id si returnezi toate evenimentele din ziua curenta. Fara minute/ore.
 
 
-A nevoie de un endpoint cu audentificare, sa imi returneze userul curent. Tot modelul userului.
+A nevoie de un endpoint care necesita sa fi autentificat, sa imi returneze userul curent. Tot modelul userului.
