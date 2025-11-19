@@ -14,11 +14,24 @@ public class EventController : ControllerBase
     }
 
     [HttpGet]
+    
     public async Task<IActionResult> GetAll ()
     {
         var events = await _eventService.GetEventsForCurrentUser();
         return Ok(events);
     }
+
+    [HttpGet("group/{groupId}/today")]
+
+    public async Task<IActionResult> GetEventsForGroup(int groupId)
+    {
+        var result = await _eventService.GetEventsForGroup(groupId);
+        if(result.Result != null)
+            return Ok(result.Result);
+        return BadRequest();
+    }
+    
+    
 
     [HttpPost]
     public IActionResult CreateEvent([FromBody] DTO.EventModel model)
@@ -37,8 +50,8 @@ public class EventController : ControllerBase
             return Ok(result.Result);
         return BadRequest();
     }
-
-    [HttpDelete("{eventId}")]
+    
+    [HttpDelete("{eventId}")] 
     public IActionResult DeleteEvent(int eventId)
     {
         var result = _eventService.DeleteEvent(eventId);
