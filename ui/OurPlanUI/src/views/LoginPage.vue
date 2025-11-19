@@ -1,74 +1,83 @@
 <template>
-  <div class="login-page">
-    <div class="login-card">
-      <h2 class="login-title">
-        {{ isRegistering ? "Creează un cont nou" : "Conectează-te" }}
+  <div class="auth-page">
+    <div class="auth-card">
+      <h2 class="auth-title">
+        {{ isRegistering ? "Create a New Account" : "Welcome Back" }}
       </h2>
-      <form @submit.prevent="isRegistering ? handleRegister() : handleLogin()">
-        <div v-if="!isRegistering">
-          <div class="input-group">
-            <label for="email">Email</label>
-            <InputText
-              v-model="email"
-              placeholder="Introdu utilizatorul tău"
-            />
-          </div>
-          <div class="input-group">
-            <label for="password">Password</label>
-            <InputText
-              v-model="password"
-              type="password"
-              required
-              placeholder="Introdu parola:"
-            />
-          </div>
-          <button type="submit" class="login-button">Login</button>
-          <label
-            class="my-2 text-white font-xl cursor-pointer"
-            @click="toggleForm"
-          >
-            Create new account...
-          </label>
-        </div>
 
-        <div v-else>
-          <div class="input-group">
-            <label for="username">Username</label>
-            <InputText
-              v-model="newUsername"
-              required
-              placeholder="Choose a username"
-            />
+      <p class="auth-subtitle">
+        {{ isRegistering ? "Register to continue" : "Login to your account" }}
+      </p>
+
+      <form
+        class="auth-form"
+        @submit.prevent="isRegistering ? handleRegister() : handleLogin()"
+      >
+        <!-- LOGIN FORM -->
+        <transition name="fade-slide" mode="out-in">
+          <div v-if="!isRegistering" key="login">
+            <div class="input-group">
+              <label>Email</label>
+              <InputText v-model="email" placeholder="Enter your email" />
+            </div>
+
+            <div class="input-group">
+              <label>Password</label>
+              <InputText
+                v-model="password"
+                type="password"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            <button class="auth-button" type="submit">Login</button>
+
+            <p class="switch-text" @click="toggleForm">
+              Don’t have an account?
+              <span>Create one</span>
+            </p>
           </div>
-          <div class="input-group">
-            <label for="email">Email</label>
-            <InputText
-              v-model="email"
-              type="email"
-              required
-              placeholder="Email"
-            />
+
+          <!-- REGISTER FORM -->
+          <div v-else key="register">
+            <div class="input-group">
+              <label>Username</label>
+              <InputText
+                v-model="newUsername"
+                placeholder="Choose a username"
+              />
+            </div>
+
+            <div class="input-group">
+              <label>Email</label>
+              <InputText
+                v-model="email"
+                type="email"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div class="input-group">
+              <label>Password</label>
+              <InputText
+                v-model="newPassword"
+                type="password"
+                placeholder="Create a password"
+              />
+            </div>
+
+            <button class="auth-button" type="submit">Register</button>
+
+            <p class="switch-text" @click="toggleForm">
+              Already have an account?
+              <span>Log in</span>
+            </p>
           </div>
-          <div class="input-group">
-            <label for="password">Password</label>
-            <InputText
-              v-model="newPassword"
-              type="password"
-              required
-              placeholder="Password"
-            />
-          </div>
-          <button type="submit" class="login-button" >Register</button>
-          <label
-            class="my-2 text-white font-xl cursor-pointer"
-            @click="toggleForm"
-          >
-            If you have an account, login...
-          </label>
-        </div>
+        </transition>
       </form>
     </div>
-    <Toast group="general"/>
+
+    <Toast group="general" />
   </div>
 </template>
 
@@ -76,13 +85,12 @@
 import InputText from "primevue/inputtext";
 import { ref } from "vue";
 import { useUserStore } from "../stores/userStore";
-import router from "../router"; 
+import router from "../router";
 import { useToast } from "primevue/usetoast";
 import Toast from "primevue/toast";
 
-const username = ref("");
-const password = ref("");
 const email = ref("");
+const password = ref("");
 const newUsername = ref("");
 const newPassword = ref("");
 const isRegistering = ref(false);
@@ -91,44 +99,43 @@ const userStore = useUserStore();
 const toast = useToast();
 
 async function handleLogin() {
-  console.log("Logging in with:", username.value, password.value);
   if (await userStore.login(email.value, password.value)) {
-    router.push("/objectives");
+    router.push("/groups");
     toast.add({
       severity: "success",
-      summary: "Autentificare cu succes",
-      detail: "Te-ai autentificat cu succes",
+      summary: "Success",
+      detail: "Logged in successfully",
       life: 3000,
-      group: "general"
+      group: "general",
     });
   } else {
     toast.add({
       severity: "error",
-      summary: "Eroare de autentificare",
-      detail: "Numele de utilizator sau parola sunt incorecte",
+      summary: "Login failed",
+      detail: "Incorrect email or password",
       life: 3000,
-      group: "general"
+      group: "general",
     });
   }
 }
 
 async function handleRegister() {
-  let resp = await userStore.signup(
+  const resp = await userStore.signup(
     newUsername.value,
     newPassword.value,
     email.value
   );
+
   if (resp) {
     isRegistering.value = false;
+    toast.add({
+      severity: "success",
+      summary: "Account created",
+      detail: "Your account has been created successfully",
+      life: 3000,
+      group: "general",
+    });
   }
-  toast.add({
-    severity: "success",
-    summary: "Înregistrare cu succes",
-    detail: "Contul a fost înregistrat cu succes",
-    life: 3000,
-    group: "general"
-  });
-  console.log(resp);
 }
 
 function toggleForm() {
@@ -137,87 +144,130 @@ function toggleForm() {
 </script>
 
 <style scoped>
-.login-page {
+/* Page layout */
+.auth-page {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #2f6dd1;
-  background-position: center;
-  background-repeat: no-repeat;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  min-height: 100vh;
+  padding: 1rem;
+  background: linear-gradient(135deg, #2f6dd1, #1d4ca0);
 }
 
-.login-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  width: 350px;
-  max-width: 90vh;
-  max-height: 90vh;
-  overflow-y: auto;
+/* Card container */
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2rem 2.4rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(14px);
+  animation: fadeIn 0.5s ease;
 }
 
-.login-title {
+/* Titles */
+.auth-title {
+  color: #fff;
   text-align: center;
-  color: white;
-  margin-bottom: 1.5rem;
+  font-size: 1.9rem;
+  margin-bottom: 0.3rem;
 }
 
+.auth-subtitle {
+  text-align: center;
+  color: #e0e0e0;
+  margin-bottom: 2rem;
+}
+
+/* Form styling */
 .input-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 .input-group label {
   display: block;
-  color: white;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
+  margin-bottom: 0.4rem;
+  color: #fff;
+  font-weight: 500;
 }
 
 .input-group input {
   width: 100%;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: #333;
+  padding: 0.8rem;
+  border-radius: 10px;
 }
 
-.input-group input::placeholder {
-  color: #888;
-}
-
-.login-button {
+/* Button */
+.auth-button {
   width: 100%;
-  padding: 0.75rem;
-  background-color: #4caf50;
-  color: white;
-  font-size: 1rem;
-  font-weight: bold;
+  padding: 0.9rem;
+  background: #4caf50;
   border: none;
-  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: 0.3s ease;
+  margin-top: 0.5rem;
 }
 
-.login-button:hover {
-  background-color: #45a049;
+.auth-button:hover {
+  background: #43a047;
 }
 
-.my-2 {
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-.cursor-pointer {
+/* Switch text */
+.switch-text {
+  margin-top: 1.2rem;
+  color: #ddd;
+  text-align: center;
+  font-size: 0.95rem;
   cursor: pointer;
+}
+
+.switch-text span {
+  color: #fff;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-15px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive improvements */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 1.6rem;
+    border-radius: 14px;
+  }
+
+  .auth-title {
+    font-size: 1.6rem;
+  }
 }
 </style>

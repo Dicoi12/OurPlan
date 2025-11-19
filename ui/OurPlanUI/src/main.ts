@@ -7,6 +7,7 @@ import Button from 'primevue/button';
 import { createPinia } from 'pinia';
 import router from './router';
 import ToastService from 'primevue/toastservice';
+import 'primeicons/primeicons.css'
 
 
 const app = createApp(App);
