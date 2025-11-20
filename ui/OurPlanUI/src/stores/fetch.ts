@@ -61,11 +61,31 @@ const fetchApi = async (
   const response = await fetch(url, options);
 
   if (!response.ok) {
-    const errorData = await response.json();
+    let errorData;
+    try {
+      const text = await response.text();
+      errorData = text ? JSON.parse(text) : { message: `HTTP ${response.status}: ${response.statusText}` };
+    } catch {
+      errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+    }
     throw errorData;
   }
 
-  return response.json();
+  // Check if response has content
+  const text = await response.text();
+  
+  // If response is empty, return null
+  if (!text || text.trim() === "") {
+    return null;
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Failed to parse response as JSON:", text);
+    throw { message: "Invalid JSON response from server" };
+  }
 };
 
 export default fetchApi;

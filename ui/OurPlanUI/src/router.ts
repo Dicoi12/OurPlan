@@ -20,6 +20,11 @@ const router = createRouter({
       component: defineAsyncComponent(() => import("./views/GroupsPage.vue")),
       meta: { requiresAuth: true },
     },
+    {
+      path: "/events",
+      component: defineAsyncComponent(() => import("./views/EventsPage.vue")),
+      meta: { requiresAuth: true },
+    },
   ],
 });
 router.beforeEach((to, from, next) => {

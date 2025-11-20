@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using OurPlan.Data;
 using OurPlan.DTO;
@@ -37,6 +38,10 @@ namespace OurPlan.Services
                 }
 
                 model.CreatedByUserId = (int)currentUser;
+                if (_context.Groups.Any(x => x.CreatedByUserId == currentUser))
+                {
+                    throw new Exception("This user already has a group.");
+                }
                 var entity = _mapper.Map<Group>(model);
                 _context.Groups.Add(entity);
                 await _context.SaveChangesAsync();

@@ -36,7 +36,6 @@ public class GroupController : ControllerBase
 
 
     [HttpPost]
-
     public IActionResult CreateGroup([FromBody] DTO.GroupModel model)
     {
         var group = _groupService.CreateGroup(model);
@@ -46,7 +45,6 @@ public class GroupController : ControllerBase
     }
 
     [HttpPut]
-
     public IActionResult UpdateGroup([FromBody] GroupModel model)
     {
         var group = _groupService.UpdateGroup(model);
@@ -56,13 +54,13 @@ public class GroupController : ControllerBase
     }
 
     [HttpDelete]
-
     public IActionResult DeleteGroup(int groupId)
     {
         var group = _groupService.DeleteGroup(groupId);
-        if (group.Result != null) ;
-        return Ok(group.Result);
-        return BadRequest();
+        if (group.Result != null)
+            return Ok(group.Result);
+        else
+            return BadRequest();
     }
 
 
