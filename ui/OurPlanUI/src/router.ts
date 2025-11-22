@@ -27,13 +27,22 @@ const router = createRouter({
     },
   ],
 });
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useUserStore();
   authStore.syncTokenFromCookie();
-  if (to.meta.requiresAuth && authStore.isAuthenticated === false) {
-    next("/login");
-  } else {
-    next();
+  
+  if (to.meta.requiresAuth) {
+    if (authStore.isAuthenticated === false) {
+      next("/login");
+      return;
+    }
+    
+    // Dacă utilizatorul este autentificat dar nu are date, le încărcăm
+    if (authStore.isAuthenticated && !authStore.hasUserData) {
+      await authStore.loadCurrentUser();
+    }
   }
+  
+  next();
 });
 export default router;

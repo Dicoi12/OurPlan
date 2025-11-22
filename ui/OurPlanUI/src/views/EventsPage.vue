@@ -22,7 +22,7 @@
           <button
             v-for="view in views"
             :key="view.value"
-            @click="currentView = view.value"
+            @click="changeView(view.value)"
             :class="[
               'px-4 py-2 rounded-lg font-medium transition-all duration-200',
               currentView === view.value
@@ -73,7 +73,7 @@
       <div class="events-card rounded-2xl shadow-lg overflow-hidden">
         <!-- Day View -->
         <div v-if="currentView === 'day'" class="day-view">
-          <div class="grid grid-cols-1">
+          <div class="grid grid-cols-1">„
             <div class="border-r border-gray-200">
               <div class="sticky top-0 bg-white z-10 border-b border-gray-200 p-4">
                 <h2 class="text-xl font-bold events-text-dark">
@@ -85,26 +85,27 @@
                 <div
                   v-for="hour in hours"
                   :key="hour"
-                  class="absolute left-0 w-20 p-2 text-sm events-text-muted font-medium border-b border-gray-100"
+                  class="absolute left-0 w-20 p-2 text-sm events-text-muted font-medium border-b border-gray-100 z-20"
                   :style="{ top: `${hour * 60}px`, height: '60px' }"
                 >
                   {{ formatHour(hour) }}
                 </div>
-                <!-- Clickable areas for each hour - placed behind events -->
+                <!-- Clickable areas for each hour - placed behind events but clickable -->
                 <div
                   v-for="hour in hours"
                   :key="`click-${hour}`"
-                  class="absolute left-20 right-0 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors"
-                  :style="{ top: `${hour * 60}px`, height: '60px', zIndex: 1 }"
+                  class="absolute left-20 right-0 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors z-0"
+                  :style="{ top: `${hour * 60}px`, height: '60px' }"
                   @click="openModalForHour(hour)"
+                  title="Click to add event"
                 ></div>
-                <!-- Events container - placed on top -->
-                <div class="absolute left-20 right-0" style="height: 1440px; z-index: 10;">
+                <!-- Events container - placed on top but allows clicks through empty areas -->
+                <div class="absolute left-20 right-0 pointer-events-none" style="height: 1440px; z-index: 10;">
                   <div
                     v-for="event in getEventsForDayFiltered(getCurrentDateString())"
                     :key="event.Id"
                     :style="getEventStyle(event)"
-                    class="absolute left-2 right-2 rounded-lg p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                    class="absolute left-2 right-2 rounded-lg p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow pointer-events-auto"
                     :class="getEventColorClass(event)"
                     @click.stop
                   >
@@ -261,13 +262,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useGroupsStore } from "../stores/groupsStore";
+import { useEventStore } from "../stores/eventStore";
+import { useUserStore } from "../stores/userStore";
 import router from "../router";
 import EventModal from "../components/EventModal.vue";
+import type { IEventModel } from "../interfaces";
 
 const groupsStore = useGroupsStore();
-
+const eventStore = useEventStore();
+const userStore = useUserStore();
 const currentView = ref<"day" | "week" | "month">("week");
 const currentDate = ref(new Date());
 const isLoading = ref(false);
@@ -276,92 +281,8 @@ const isModalOpen = ref(false);
 const selectedDate = ref<Date>(new Date());
 const selectedHour = ref<number | undefined>(undefined);
 
-// Helper function to create dates
-const createDate = (daysOffset: number, hours: number, minutes: number = 0): Date => {
-  const date = new Date();
-  date.setDate(date.getDate() + daysOffset);
-  date.setHours(hours, minutes, 0, 0);
-  return date;
-};
 
-// Hardcoded events for testing (Teams-like calendar)
-const hardcodedEvents = ref([
-  {
-    Id: 1,
-    Title: "Team Standup",
-    StartDate: createDate(0, 9, 0),
-    EndDate: createDate(0, 9, 30),
-    CreatedByUserId: 1,
-    IsShared: true,
-    color: "blue"
-  },
-  {
-    Id: 2,
-    Title: "Client Meeting",
-    StartDate: createDate(0, 10, 30),
-    EndDate: createDate(0, 11, 30),
-    CreatedByUserId: 2,
-    IsShared: true,
-    color: "green"
-  },
-  {
-    Id: 3,
-    Title: "Lunch Break",
-    StartDate: createDate(0, 12, 0),
-    EndDate: createDate(0, 13, 0),
-    CreatedByUserId: 1,
-    IsShared: false,
-    color: "orange"
-  },
-  {
-    Id: 4,
-    Title: "Project Review",
-    StartDate: createDate(0, 14, 0),
-    EndDate: createDate(0, 15, 30),
-    CreatedByUserId: 3,
-    IsShared: true,
-    color: "purple"
-  },
-  {
-    Id: 5,
-    Title: "Code Review",
-    StartDate: createDate(0, 16, 0),
-    EndDate: createDate(0, 17, 0),
-    CreatedByUserId: 2,
-    IsShared: true,
-    color: "red"
-  },
-  // Tomorrow's events
-  {
-    Id: 6,
-    Title: "Sprint Planning",
-    StartDate: createDate(1, 9, 0),
-    EndDate: createDate(1, 10, 30),
-    CreatedByUserId: 1,
-    IsShared: true,
-    color: "blue"
-  },
-  {
-    Id: 7,
-    Title: "Design Workshop",
-    StartDate: createDate(1, 11, 0),
-    EndDate: createDate(1, 12, 30),
-    CreatedByUserId: 2,
-    IsShared: true,
-    color: "green"
-  },
-  // Next week events
-  {
-    Id: 8,
-    Title: "Quarterly Review",
-    StartDate: createDate(7, 10, 0),
-    EndDate: createDate(7, 12, 0),
-    CreatedByUserId: 1,
-    IsShared: true,
-    color: "purple"
-  },
-]);
-
+// Eliminăm onBeforeMount - evenimentele se vor încărca în onMounted pentru grup
 const views = [
   { value: "day" as const, label: "Day", icon: "pi pi-calendar" },
   { value: "week" as const, label: "Week", icon: "pi pi-calendar-times" },
@@ -372,9 +293,9 @@ const hours = Array.from({ length: 24 }, (_, i) => i);
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const displayEvents = computed(() => {
-  return hardcodedEvents.value;
+  return eventStore.events || [];
 });
-
+    
 // Helper to get current date as string
 const getCurrentDateString = (): string => {
   if (!currentDate.value) {
@@ -529,34 +450,6 @@ const getEventStyle = (event: any): any => {
   };
 };
 
-const getEventsForHour = (hour: number) => {
-  return displayEvents.value.filter((event) => {
-    if (!event.StartDate) return false;
-    const start = new Date(event.StartDate);
-    const eventDate = start.toISOString().split("T")[0];
-    const currentDateStr = currentDate.value.toISOString().split("T")[0];
-    // Include events that start in this hour or overlap with this hour
-    return eventDate === currentDateStr && (
-      start.getHours() === hour || 
-      (start.getHours() < hour && new Date(event.EndDate).getHours() >= hour)
-    );
-  });
-};
-
-const getEventsForDayAndHour = (date: string, hour: number) => {
-  return displayEvents.value.filter((event) => {
-    if (!event.StartDate) return false;
-    const start = new Date(event.StartDate);
-    const end = new Date(event.EndDate);
-    const eventDateStr = start.toISOString().split("T")[0];
-    // Include events that start in this hour or overlap with this hour
-    return eventDateStr === date && (
-      start.getHours() === hour || 
-      (start.getHours() < hour && end.getHours() >= hour)
-    );
-  });
-};
-
 const getEventsForDay = (date: string) => {
   return displayEvents.value.filter((event) => {
     if (!event.StartDate) return false;
@@ -576,6 +469,7 @@ const previousPeriod = () => {
     newDate.setMonth(newDate.getMonth() - 1);
   }
   currentDate.value = newDate;
+  // Evenimentele se vor reîncărca automat prin watcher
 };
 
 const nextPeriod = () => {
@@ -588,10 +482,20 @@ const nextPeriod = () => {
     newDate.setMonth(newDate.getMonth() + 1);
   }
   currentDate.value = newDate;
+  // Evenimentele se vor reîncărca automat prin watcher
+};
+
+const changeView = (view: "day" | "week" | "month") => {
+  currentView.value = view;
+  // Reîncarcă evenimentele pentru noul view
+  if (groupsStore.group?.Id) {
+    loadEvents();
+  }
 };
 
 const goToToday = () => {
   currentDate.value = new Date();
+  // Evenimentele se vor reîncărca automat prin watcher
 };
 
 const openModalForHour = (hour: number) => {
@@ -616,27 +520,76 @@ const closeModal = () => {
   isModalOpen.value = false;
 };
 
-const handleSaveEvent = (eventData: any) => {
-  // Generate a new ID for the event
-  const newId = Math.max(...hardcodedEvents.value.map(e => e.Id), 0) + 1;
-  
-  // Add the new event to the list
-  hardcodedEvents.value.push({
-    Id: newId,
-    Title: eventData.Title,
-    StartDate: eventData.StartDate,
-    EndDate: eventData.EndDate,
-    CreatedByUserId: 1, // You can get this from user store
-    IsShared: eventData.IsShared,
-    color: eventData.color,
-  });
-  
-  // Close modal
-  closeModal();
-  
-  // TODO: When ready, call API to save event
-  // await eventStore.createEvent(eventData);
+const handleSaveEvent = async (eventData: any) => {
+  try {
+    isLoading.value = true;
+    errorMessage.value = "";
+    
+    // Pregătește evenimentul cu toate datele necesare
+    const eventToAdd: IEventModel = {
+      Id: 0, // Va fi setat de server
+      Title: eventData.Title,
+      StartDate: eventData.StartDate,
+      EndDate: eventData.EndDate,
+      CreatedByUserId: userStore.userData.Id,
+      IsShared: eventData.IsShared,
+    };
+    
+    // Adaugă evenimentul în coadă (va fi procesat cap-coadă)
+    await eventStore.queueEvent(eventToAdd);
+    
+    // Evenimentele vor fi actualizate automat de store după procesare
+    // Nu mai este nevoie să adăugăm manual în listă
+    
+    // Close modal
+    closeModal();
+  } catch (error: any) {
+    errorMessage.value = error?.message || "Failed to save event";
+  } finally {
+    isLoading.value = false;
+  }
 };
+
+const loadEvents = async () => {
+  if (!groupsStore.group?.Id) {
+    errorMessage.value = "No group found. Please join or create a group first.";
+    console.warn("No group found, cannot load events");
+    return;
+  }
+
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    console.log("Loading events for group:", groupsStore.group.Id, "View:", currentView.value, "Date:", currentDate.value);
+    // Trimitem view-mode-ul curent și data curentă
+    const events = await eventStore.getEventsForGroup(
+      groupsStore.group.Id,
+      currentView.value,
+      currentDate.value
+    );
+    console.log("Events loaded:", events?.length || 0, "events");
+  } catch (error: any) {
+    console.error("Error loading events:", error);
+    errorMessage.value = error?.message || "Failed to load events";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Watch pentru a reîncărca evenimentele când se schimbă data
+// View-ul este gestionat de funcția changeView pentru a evita dublă încărcare
+watch(currentDate, () => {
+  if (groupsStore.group?.Id) {
+    loadEvents();
+  }
+}, { deep: true, immediate: false });
+
+// Watch separat pentru view (ca backup, dar changeView este principalul handler)
+watch(currentView, () => {
+  if (groupsStore.group?.Id) {
+    loadEvents();
+  }
+}, { immediate: false });
 
 onMounted(async () => {
   // Check if user has a group
@@ -648,30 +601,9 @@ onMounted(async () => {
     return;
   }
 
-  // For now, we're using hardcoded events
-  // Later, uncomment this to load real events:
-  // await loadEvents();
+  // Load events for the group
+  await loadEvents();
 });
-
-// Uncomment this function when ready to load real events
-// const loadEvents = async () => {
-//   if (!groupsStore.group?.Id) {
-//     errorMessage.value = "No group found. Please join or create a group first.";
-//     return;
-//   }
-
-//   isLoading.value = true;
-//   errorMessage.value = "";
-//   try {
-//     const groupEvents = await eventStore.getEventsForGroup(groupsStore.group.Id);
-//     displayEvents.value = groupEvents || [];
-//   } catch (error: any) {
-//     errorMessage.value = error?.message || "Failed to load events";
-//     displayEvents.value = [];
-//   } finally {
-//     isLoading.value = false;
-//   }
-// };
 </script>
 
 <style scoped>

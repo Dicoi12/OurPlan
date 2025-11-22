@@ -10,7 +10,7 @@ namespace OurPlan.Services.Interfaces
         public Task<ServiceResult<EventModel>> UpdateEvent(EventModel model);
         public Task<ServiceResult<EventModel>> DeleteEvent(int eventId);
         
-        public Task<ServiceResult<List<EventModel>>> GetEventsForGroup(int groupId);
+        public Task<ServiceResult<List<EventModel>>> GetEventsForGroup(int groupId, string viewMode, DateTime? date);
 
     }
 }

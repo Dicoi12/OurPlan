@@ -21,14 +21,16 @@ public class EventController : ControllerBase
         return Ok(events);
     }
 
-    [HttpGet("group/{groupId}/today")]
-
-    public async Task<IActionResult> GetEventsForGroup(int groupId)
+    [HttpGet("group/{groupId}")]
+    public async Task<IActionResult> GetEventsForGroup(
+        int groupId, 
+        [FromQuery] string viewMode = "day", 
+        [FromQuery] DateTime? date = null)
     {
-        var result = await _eventService.GetEventsForGroup(groupId);
+        var result = await _eventService.GetEventsForGroup(groupId, viewMode, date);
         if(result.Result != null)
             return Ok(result.Result);
-        return BadRequest();
+        return BadRequest(result.ValidationMessage);
     }
     
     

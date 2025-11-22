@@ -20,7 +20,7 @@ namespace OurPlan.Services
             _mapper = mapper;
         }
 
-        public async Task<ServiceResult<List<EventModel>>> GetEventsForGroup(int groupId)
+        public async Task<ServiceResult<List<EventModel>>> GetEventsForGroup(int groupId, string viewMode, DateTime? date)
         {
             var result = new ServiceResult<List<EventModel>>();
 
@@ -45,22 +45,68 @@ namespace OurPlan.Services
                     .Where(g => g.GroupId == groupId)
                     .Select(g => g.UserId)
                     .ToListAsync();
-                    
-                    
-                    
-                var utcNow = DateTime.UtcNow;
-                var startOfDay = utcNow.Date;
-                var endOfDay = startOfDay.AddDays(1);
                 
+                // Folosim data primită sau data curentă dacă nu este specificată
+                // Tratăm data ca fiind UTC de la început
+                var targetDate = date?.Date ?? DateTime.UtcNow.Date;
+                if (date.HasValue && date.Value.Kind != DateTimeKind.Utc)
+                {
+                    // Dacă data nu este UTC, o convertim
+                    targetDate = date.Value.ToUniversalTime().Date;
+                }
                 
+                DateTime startDate;
+                DateTime endDate;
+
+                // Determinăm intervalul de date în funcție de view-mode
+                switch (viewMode?.ToLower())
+                {
+                    case "day":
+                        // Pentru zi: evenimente care se suprapun cu ziua specificată
+                        startDate = targetDate;
+                        endDate = targetDate.AddDays(1);
+                        break;
+                    case "week":
+                        // Pentru săptămână: găsim începutul săptămânii (duminică)
+                        var dayOfWeek = (int)targetDate.DayOfWeek;
+                        startDate = targetDate.AddDays(-dayOfWeek);
+                        endDate = startDate.AddDays(7);
+                        break;
+                    case "month":
+                        // Pentru lună: prima zi a lunii până la prima zi a lunii următoare
+                        startDate = new DateTime(targetDate.Year, targetDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                        endDate = startDate.AddMonths(1);
+                        break;
+                    default:
+                        // Default: ziua curentă
+                        startDate = targetDate;
+                        endDate = targetDate.AddDays(1);
+                        break;
+                }
+
+                // Asigurăm că datele sunt UTC
+                if (startDate.Kind != DateTimeKind.Utc)
+                {
+                    startDate = DateTime.SpecifyKind(startDate, DateTimeKind.Utc);
+                }
+                if (endDate.Kind != DateTimeKind.Utc)
+                {
+                    endDate = DateTime.SpecifyKind(endDate, DateTimeKind.Utc);
+                }
+                
+                var startDateUtc = startDate;
+                var endDateUtc = endDate;
 
                 var events = await _context.Events
                     .Where(e =>
                         groupUserId.Contains(e.CreatedByUserId) &&
                         (
-                            (e.StartDate >= startOfDay && e.StartDate < endOfDay) ||
-                            (e.EndDate >= startOfDay && e.EndDate < endOfDay) ||
-                            (e.StartDate <= startOfDay && e.EndDate >= endOfDay)
+                            // Evenimentul începe în interval
+                            (e.StartDate >= startDateUtc && e.StartDate < endDateUtc) ||
+                            // Evenimentul se termină în interval
+                            (e.EndDate >= startDateUtc && e.EndDate < endDateUtc) ||
+                            // Evenimentul cuprinde întreg intervalul
+                            (e.StartDate <= startDateUtc && e.EndDate >= endDateUtc)
                         )
                     )
                     .Select(e => new EventModel

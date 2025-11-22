@@ -4,23 +4,66 @@ import type { IUserModel } from "../interfaces";
 import type { IToken } from "../types/InteralInterfaces";
 import { getCookie } from "./helper";
 
+// Constante pentru localStorage keys
+const USER_DATA_KEY = "userData";
+
+// Funcții helper pentru localStorage
+function saveUserDataToStorage(userData: IUserModel): void {
+  try {
+    localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
+  } catch (error) {
+    console.error("Error saving user data to localStorage:", error);
+  }
+}
+
+function loadUserDataFromStorage(): IUserModel | null {
+  try {
+    const stored = localStorage.getItem(USER_DATA_KEY);
+    if (stored) {
+      const userData = JSON.parse(stored);
+      // Convertim CreatedAt din string în Date
+      if (userData.CreatedAt) {
+        userData.CreatedAt = new Date(userData.CreatedAt);
+      }
+      return userData;
+    }
+  } catch (error) {
+    console.error("Error loading user data from localStorage:", error);
+  }
+  return null;
+}
+
+function removeUserDataFromStorage(): void {
+  try {
+    localStorage.removeItem(USER_DATA_KEY);
+  } catch (error) {
+    console.error("Error removing user data from localStorage:", error);
+  }
+}
+
 export const useUserStore = defineStore("userStore", {
   state: (): {
     token?: string;
     userData: IUserModel;
+    isLoading: boolean;
   } => {
+    // Încercăm să încărcăm userData din localStorage
+    const storedUserData = loadUserDataFromStorage();
+    
     return {
       token: getCookie("token"),
-      userData: {
+      userData: storedUserData || {
         Id: 0,
         Username: "",
         Email: "",
         CreatedAt: new Date(),
       },
+      isLoading: false,
     };
   },
   getters: {
     isAuthenticated: (state) => !!state.token,
+    hasUserData: (state) => state.userData.Id > 0 && state.userData.Username !== "",
   },
   actions: {
     async login(
@@ -36,6 +79,10 @@ export const useUserStore = defineStore("userStore", {
         document.cookie = `token=${data.token}; path=/; max-age=3600; samesite=strict`;
         console.log("Token set in cookie:", document.cookie);
         this.syncTokenFromCookie();
+        
+        // După login, încărcăm datele utilizatorului
+        await this.loadCurrentUser();
+        
         return data;
       } catch (error) {
         console.error("Error logging in:", error);
@@ -72,6 +119,51 @@ export const useUserStore = defineStore("userStore", {
       }
 
     },
+    async loadCurrentUser(): Promise<IUserModel | null> {
+      // Verificăm dacă există token
+      if (!this.token) {
+        this.syncTokenFromCookie();
+      }
+      
+      if (!this.token) {
+        console.log("No token found, cannot load user data");
+        return null;
+      }
+
+      // Dacă avem deja userData valid, nu mai facem request
+      if (this.hasUserData) {
+        return this.userData;
+      }
+
+      this.isLoading = true;
+      try {
+        const data = await fetchApi("User/me", "GET");
+        const userData = data as IUserModel;
+        
+        // Convertim CreatedAt din string în Date dacă este necesar
+        if (typeof userData.CreatedAt === 'string') {
+          userData.CreatedAt = new Date(userData.CreatedAt);
+        }
+        
+        this.userData = userData;
+        saveUserDataToStorage(userData);
+        return userData;
+      } catch (error) {
+        console.error("Error loading current user:", error);
+        // Dacă request-ul eșuează (ex: token invalid), ștergem datele
+        this.userData = {
+          Id: 0,
+          Username: "",
+          Email: "",
+          CreatedAt: new Date(),
+        };
+        removeUserDataFromStorage();
+        return null;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    
     logout() {
       this.userData = {
         Id: 0,
@@ -79,9 +171,14 @@ export const useUserStore = defineStore("userStore", {
         Email: "",
         CreatedAt: new Date(),
       };
-      localStorage.removeItem('token');
+      // Ștergem token din cookie
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      // Ștergem userData din localStorage
+      removeUserDataFromStorage();
+      this.token = undefined;
     },
-     syncTokenFromCookie() {
+    
+    syncTokenFromCookie() {
       this.token = getCookie('token') || undefined;
     },
 
