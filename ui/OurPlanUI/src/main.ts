@@ -24,7 +24,7 @@ app.component('Button', Button);
 
 // Înregistrare PWA Service Worker
 if ('serviceWorker' in navigator) {
-    const updateSW = registerSW({
+    registerSW({
         onNeedRefresh() {
             // Poți adăuga aici o notificare către utilizator pentru actualizare
             console.log('Actualizare disponibilă pentru aplicație');
