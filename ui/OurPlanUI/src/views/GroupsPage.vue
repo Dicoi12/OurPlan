@@ -94,11 +94,11 @@
         <div class="flex items-center justify-between mb-6 pb-6 border-b groups-border">
           <div>
             <h2 class="text-2xl font-bold groups-text-dark mb-2">
-              {{ groupsStore.group.Name }}
+              {{ groupsStore.group.name }}
             </h2>
             <p class="groups-text-muted text-sm flex items-center gap-2">
               <i class="pi pi-users text-xs"></i>
-              <span>{{ groupsStore.group.UserGropus?.length || 0 }} member{{ (groupsStore.group.UserGropus?.length || 0) !== 1 ? 's' : '' }}</span>
+              <span>{{ groupsStore.group.userGroups?.length || 0 }} member{{ (groupsStore.group.userGroups?.length || 0) !== 1 ? 's' : '' }}</span>
             </p>
           </div>
           <div class="flex items-center justify-center w-16 h-16 groups-icon-bg rounded-full">
@@ -165,7 +165,7 @@
             </div>
             <div class="flex-1">
               <p class="text-xs groups-text-muted mb-1">Group ID</p>
-              <p class="text-sm font-semibold groups-text-dark">{{ groupsStore.group.Id }}</p>
+              <p class="text-sm font-semibold groups-text-dark">{{ groupsStore.group.id }}</p>
             </div>
           </div>
 
@@ -175,7 +175,7 @@
             </div>
             <div class="flex-1">
               <p class="text-xs groups-text-muted mb-1">Created by User ID</p>
-              <p class="text-sm font-semibold groups-text-dark">{{ groupsStore.group.CreatedByUserId }}</p>
+              <p class="text-sm font-semibold groups-text-dark">{{ groupsStore.group.createdByUserId }}</p>
             </div>
           </div>
         </div>
@@ -262,7 +262,7 @@ const joinGroup = async () => {
 };
 
 const generateToken = async () => {
-  if (!groupsStore.group?.Id) {
+  if (!groupsStore.group?.id) {
     errorMessage.value = "Group ID is missing";
     return;
   }
@@ -270,7 +270,7 @@ const generateToken = async () => {
   errorMessage.value = "";
   successMessage.value = "";
   try {
-    const token = await groupsStore.generateGroupToken(groupsStore.group.Id);
+    const token = await groupsStore.generateGroupToken(groupsStore.group.id);
     if (token) {
       groupToken.value = token;
       successMessage.value = "Invite code generated successfully!";
