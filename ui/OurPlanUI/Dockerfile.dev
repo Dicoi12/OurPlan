@@ -1,0 +1,20 @@
+# Dockerfile pentru development - Frontend Vue.js/Vite
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copiem fișierele de dependențe
+COPY package*.json ./
+
+# Instalăm dependențele
+RUN npm ci
+
+# Copiem restul codului sursă
+COPY . .
+
+# Expunem portul pentru Vite dev server
+EXPOSE 5173
+
+# Pornim dev server-ul
+CMD ["npm", "run", "dev", "--", "--host"]
+
