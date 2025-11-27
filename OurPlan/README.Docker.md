@@ -12,11 +12,16 @@ Acest proiect include configurații Docker pentru a rula aplicația într-un med
 
 ## Utilizare
 
+**IMPORTANT**: Rulează comenzile Docker din rădăcina proiectului (`OurPlan/`), nu din subdirectoare.
+
 ### Producție
 
 Pentru a rula aplicația în modul producție:
 
 ```bash
+# Navighează în rădăcina proiectului
+cd C:\Users\Winkode\Desktop\Projects\OurPlan
+
 # Construiește și pornește toate serviciile
 docker-compose up -d
 
@@ -35,9 +40,16 @@ Serviciile vor fi disponibile la:
 Pentru development cu hot-reload:
 
 ```bash
+# Navighează în rădăcina proiectului
+cd C:\Users\Winkode\Desktop\Projects\OurPlan
+
 # Folosește docker-compose.dev.yml
 docker-compose -f docker-compose.dev.yml up -d
 ```
+
+### Dacă rulezi din directorul backend
+
+Dacă preferi să rulezi din directorul `OurPlan/OurPlan/`, folosește fișierele `docker-compose.yml` și `docker-compose.dev.yml` din acel director. Contextul este deja setat corect pentru acest caz.
 
 Serviciile vor fi disponibile la:
 - Frontend: http://localhost:5173
