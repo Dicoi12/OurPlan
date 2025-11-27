@@ -50,7 +50,7 @@ export interface IExpenseModel {
   title: string;
   amount: number;
   category: string;
-  date: Date;
+  date: Date | string;
   createdByUserId: number;
   description?: string;
 }

@@ -55,7 +55,7 @@ export const useGroupsStore = defineStore("groupsStore", {
         } else if ((data as IServiceResult<IGroupModel>).result) {
           // Wrapped in IServiceResult
           group = (data as IServiceResult<IGroupModel>).result;
-        } else if ((data as IGroupModel).Id) {
+        } else if ((data as IGroupModel).id) {
           // Direct IGroupModel
           group = data as IGroupModel;
         }
@@ -63,7 +63,7 @@ export const useGroupsStore = defineStore("groupsStore", {
         if (group) {
           this.group = group;
           // Add to groups list
-          if (!this.groups.find(g => g.Id === group!.Id)) {
+          if (!this.groups.find(g => g.id === group!.id)) {
             this.groups.push(group);
           }
         } else {

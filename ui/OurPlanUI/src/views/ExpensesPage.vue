@@ -232,7 +232,7 @@ const newExpense = ref<Partial<IExpenseModel>>({
   title: "",
   amount: 0,
   category: "",
-  date: new Date().toISOString().split("T")[0],
+  date: new Date().toISOString().split("T")[0] as string,
   description: "",
 });
 
@@ -266,11 +266,11 @@ onMounted(() => {
 });
 
 const selectedYear = computed(() => {
-  return parseInt(selectedMonth.value.split("-")[0]);
+  return parseInt(selectedMonth.value?.split("-")[0] || "0");
 });
 
 const selectedMonthIndex = computed(() => {
-  return parseInt(selectedMonth.value.split("-")[1]) - 1;
+  return parseInt(selectedMonth.value?.split("-")[1] || "0") - 1;
 });
 
 const currentMonthExpenses = computed(() => {
@@ -319,9 +319,9 @@ const initializeDummyData = () => {
       
       const expense: IExpenseModel = {
         id: i + 1,
-        title: titles[Math.floor(Math.random() * titles.length)],
+        title: titles[Math.floor(Math.random() * titles.length)] as string,
         amount: Math.round((Math.random() * 500 + 10) * 100) / 100,
-        category: categories[Math.floor(Math.random() * categories.length)],
+        category: categories[Math.floor(Math.random() * categories.length)] as string,
         date: date,
         createdByUserId: userStore.userData?.id || 1,
         description: i % 3 === 0 ? "Cheltuială recurentă" : undefined,
@@ -437,7 +437,7 @@ const handleAddExpense = () => {
     title: "",
     amount: 0,
     category: "",
-    date: new Date().toISOString().split("T")[0],
+    date: new Date().toISOString().split("T")[0] as string,
     description: "",
   };
 };

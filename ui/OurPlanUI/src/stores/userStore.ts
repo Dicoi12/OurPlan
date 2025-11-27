@@ -53,17 +53,17 @@ export const useUserStore = defineStore("userStore", {
     return {
       token: getCookie("token"),
       userData: storedUserData || {
-        Id: 0,
-        Username: "",
-        Email: "",
-        CreatedAt: new Date(),
+        id: 0,
+        username: "",
+        email: "",
+        createdAt: new Date() as Date,
       },
       isLoading: false,
     };
   },
   getters: {
     isAuthenticated: (state) => !!state.token,
-    hasUserData: (state) => state.userData.Id > 0 && state.userData.Username !== "",
+    hasUserData: (state) => state.userData.id > 0 && state.userData.username !== "",
   },
   actions: {
     async login(
@@ -108,7 +108,7 @@ export const useUserStore = defineStore("userStore", {
     async changePassword(oldPassword: string, newPassword: string) {
       try {
         let payload = {
-          userId: this.userData.Id,
+          userId: this.userData.id,
           oldPassword: oldPassword,
           newPassword: newPassword
         };
@@ -141,8 +141,8 @@ export const useUserStore = defineStore("userStore", {
         const userData = data as IUserModel;
         
         // Convertim CreatedAt din string în Date dacă este necesar
-        if (typeof userData.CreatedAt === 'string') {
-          userData.CreatedAt = new Date(userData.CreatedAt);
+        if (typeof userData.createdAt === 'string') {
+          userData.createdAt = new Date(userData.createdAt);
         }
         
         this.userData = userData;
@@ -152,10 +152,10 @@ export const useUserStore = defineStore("userStore", {
         console.error("Error loading current user:", error);
         // Dacă request-ul eșuează (ex: token invalid), ștergem datele
         this.userData = {
-          Id: 0,
-          Username: "",
-          Email: "",
-          CreatedAt: new Date(),
+          id: 0,
+          username: "",
+          email: "",
+          createdAt: new Date() as Date,
         };
         removeUserDataFromStorage();
         return null;
@@ -166,10 +166,10 @@ export const useUserStore = defineStore("userStore", {
     
     logout() {
       this.userData = {
-        Id: 0,
-        Username: "",
-        Email: "",
-        CreatedAt: new Date(),
+        id: 0,
+        username: "",
+        email: "",
+        createdAt: new Date() as Date,
       };
       // Ștergem token din cookie
       document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";

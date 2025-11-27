@@ -32,10 +32,10 @@ export const useExpensesStore = defineStore("expensesStore", {
       const byCategory: Record<string, number> = {};
       
       expenses.forEach((expense) => {
-        if (byCategory[expense.category]) {
-          byCategory[expense.category] += expense.amount;
+        if (byCategory[expense.category || ""]) {
+          byCategory[expense.category || ""]! += expense.amount;
         } else {
-          byCategory[expense.category] = expense.amount;
+          byCategory[expense.category || ""]! = expense.amount;
         }
       });
       
