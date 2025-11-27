@@ -210,18 +210,8 @@ onMounted(async () => {
   await nextTick();
   
   console.log("Checking for group:", groupsStore.group);
-  if (groupsStore.group) {
-    console.log("Redirecting to /events");
-    router.push("/events");
-  }
-});
 
-// Watch for group changes and redirect
-watch(() => groupsStore.group, (newGroup) => {
-  if (newGroup) {
-    router.push("/events");
-  }
-}, { immediate: true });
+});
 
 // Button logic
 const createGroup = async () => {

@@ -23,9 +23,9 @@ namespace OurPlan.Services
 
         }
 
-        public async Task<ServiceResult<GroupTokenModel>> GenerateToken(int groupId)
+        public async Task<ServiceResult<string>> GenerateToken(int groupId)
         {
-            var result = new ServiceResult<GroupTokenModel>();
+            var result = new ServiceResult<string>();
 
             try
             {
@@ -59,7 +59,7 @@ namespace OurPlan.Services
                 _context.GroupTokens.Add(entity);
                 await _context.SaveChangesAsync();
 
-                result.Result = _mapper.Map<GroupTokenModel>(entity);
+                result.Result = token;
 
 
             }

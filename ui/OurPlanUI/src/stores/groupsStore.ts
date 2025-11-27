@@ -89,14 +89,26 @@ export const useGroupsStore = defineStore("groupsStore", {
     },
     async joinGroup(token: string): Promise<void> {
       try {
+        if (!token || !token.trim()) {
+          throw { ValidationMessage: "Token cannot be empty" };
+        }
+        
         // GroupToken/join expects a string token in the body
-        // JSON.stringify will convert "token" to "\"token\"" which is correct for [FromBody] string
+        // [FromBody] string in ASP.NET Core expects the string to be JSON-encoded
+        // JSON.stringify("token") produces "\"token\"" which is correct
         await fetchApi("GroupToken/join", "POST", token);
+        
+        // Backend returns Ok({ message: "User successfully joined the group" }) on success
+        // or BadRequest(result.ValidationMessage) on failure
+        // If we get here without an error, the join was successful
         // Refresh group data after joining
         await this.getUserGroups();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error joining group:", error);
-        throw error;
+        // Extract ValidationMessage if present (from backend BadRequest)
+        // or use message from error object
+        const validationMessage = error?.ValidationMessage || error?.message || "Failed to join group";
+        throw { ValidationMessage: validationMessage, ...error };
       }
     },
   },
