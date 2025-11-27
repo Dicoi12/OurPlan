@@ -109,7 +109,7 @@ const showUserMenu = ref(false)
 const showMoreMenu = ref(false)
 
 const navItems = [
-  { path: '/dashboard', icon: 'pi pi-calendar', label: 'Calendar' },
+  { path: '/events', icon: 'pi pi-calendar', label: 'Calendar' },
   { path: '/cheltuieli', icon: 'pi pi-wallet', label: 'Expenses' },
   { path: '/tasks', icon: 'pi pi-check-square', label: 'Tasks' },
   { path: '/shopping', icon: 'pi pi-shopping-cart', label: 'Shopping' },
@@ -117,7 +117,7 @@ const navItems = [
 ]
 
 const mobileNavItems = [
-  { path: '/dashboard', icon: 'pi pi-calendar', label: 'Calendar' },
+  { path: '/events', icon: 'pi pi-calendar', label: 'Calendar' },
   { path: '/cheltuieli', icon: 'pi pi-wallet', label: 'Expenses' },
   { path: '/tasks', icon: 'pi pi-check-square', label: 'Tasks' },
 ]

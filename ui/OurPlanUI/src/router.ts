@@ -25,6 +25,11 @@ const router = createRouter({
       component: defineAsyncComponent(() => import("./views/EventsPage.vue")),
       meta: { requiresAuth: true },
     },
+    {
+      path: "/cheltuieli",
+      component: defineAsyncComponent(() => import("./views/ExpensesPage.vue")),
+      meta: { requiresAuth: true },
+    },
   ],
 });
 router.beforeEach(async (to, _from, next) => {

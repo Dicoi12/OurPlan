@@ -46,45 +46,36 @@ namespace OurPlan.Services
                     .Select(g => g.UserId)
                     .ToListAsync();
                 
-                // Folosim data primită sau data curentă dacă nu este specificată
-                // Tratăm data ca fiind UTC de la început
                 var targetDate = date?.Date ?? DateTime.UtcNow.Date;
-                if (date.HasValue && date.Value.Kind != DateTimeKind.Utc)
-                {
-                    // Dacă data nu este UTC, o convertim
-                    targetDate = date.Value.ToUniversalTime().Date;
-                }
+                //if (date.HasValue && date.Value.Kind != DateTimeKind.Utc)
+                //{
+                //    targetDate = date.Value.ToUniversalTime().Date;
+                //}
                 
                 DateTime startDate;
                 DateTime endDate;
 
-                // Determinăm intervalul de date în funcție de view-mode
                 switch (viewMode?.ToLower())
                 {
                     case "day":
-                        // Pentru zi: evenimente care se suprapun cu ziua specificată
                         startDate = targetDate;
                         endDate = targetDate.AddDays(1);
                         break;
                     case "week":
-                        // Pentru săptămână: găsim începutul săptămânii (duminică)
                         var dayOfWeek = (int)targetDate.DayOfWeek;
                         startDate = targetDate.AddDays(-dayOfWeek);
                         endDate = startDate.AddDays(7);
                         break;
                     case "month":
-                        // Pentru lună: prima zi a lunii până la prima zi a lunii următoare
                         startDate = new DateTime(targetDate.Year, targetDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                         endDate = startDate.AddMonths(1);
                         break;
                     default:
-                        // Default: ziua curentă
                         startDate = targetDate;
                         endDate = targetDate.AddDays(1);
                         break;
                 }
 
-                // Asigurăm că datele sunt UTC
                 if (startDate.Kind != DateTimeKind.Utc)
                 {
                     startDate = DateTime.SpecifyKind(startDate, DateTimeKind.Utc);

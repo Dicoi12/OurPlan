@@ -34,7 +34,7 @@
               Title <span class="text-red-500">*</span>
             </label>
             <input
-              v-model="eventData.Title"
+              v-model="eventData.title"
               type="text"
               placeholder="Enter event title"
               required
@@ -120,7 +120,7 @@
           <!-- Is Shared -->
           <div class="flex items-center gap-3">
             <input
-              v-model="eventData.IsShared"
+              v-model="eventData.isShared"
               type="checkbox"
               id="isShared"
               class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -159,10 +159,10 @@
 import { ref, watch } from "vue";
 
 interface EventData {
-  Title: string;
-  StartDate: Date;
-  EndDate: Date;
-  IsShared: boolean;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  isShared: boolean;
   color: string;
 }
 
@@ -178,10 +178,10 @@ const emit = defineEmits<{
 }>();
 
 const eventData = ref<EventData>({
-  Title: "",
-  StartDate: new Date(),
-  EndDate: new Date(),
-  IsShared: true,
+  title: "",
+  startDate: new Date(),
+  endDate: new Date(),
+  isShared: true,
   color: "blue",
 });
 
@@ -226,8 +226,8 @@ const initializeForm = () => {
   endDate.value = formatDateForInput(end);
   endTime.value = formatTimeForInput(end);
   
-  eventData.value.Title = "";
-  eventData.value.IsShared = true;
+  eventData.value.title = "";
+  eventData.value.isShared = true;
   eventData.value.color = "blue";
   errorMessage.value = "";
 };
@@ -262,8 +262,8 @@ const saveEvent = () => {
   
   isSaving.value = true;
   
-  eventData.value.StartDate = start;
-  eventData.value.EndDate = end;
+  eventData.value.startDate = start;
+  eventData.value.endDate = end;
   
   // Emit the event data
   emit("save", { ...eventData.value });

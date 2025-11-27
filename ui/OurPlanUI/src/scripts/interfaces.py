@@ -21,6 +21,12 @@ def map_type(csharp_type):
     csharp_type = csharp_type.replace("?", "")  # elimină nullable
     return TYPE_MAP.get(csharp_type, csharp_type)
 
+def to_camel_case(name):
+    """Convertește numele de la PascalCase la camelCase (prima literă mică)"""
+    if not name:
+        return name
+    return name[0].lower() + name[1:] if len(name) > 1 else name.lower()
+
 def extract_class_info(content):
     class_match = re.search(r'public\s+class\s+(\w+)', content)
     if not class_match:
@@ -38,7 +44,8 @@ def convert_to_ts_interface(class_name, properties):
     lines = [f'export interface {interface_name} {{']
     for csharp_type, name in properties:
         ts_type = map_type(csharp_type)
-        lines.append(f'  {name}: {ts_type};')
+        camel_name = to_camel_case(name)
+        lines.append(f'  {camel_name}: {ts_type};')
     lines.append('}\n')
     return '\n'.join(lines)
 
@@ -61,6 +68,17 @@ def process_folder_to_ts(source_folder, destination_file):
     print(f'\n✅ Fișierul final a fost creat: {destination_file}')
 
 # Exemplu de utilizare
-source_path = '../../OurPlan/DTO'
-destination_ts_file = './interfaces.ts'
+# Calculează calea relativă bazată pe locația scriptului
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.join(script_dir, '../../../../OurPlan')
+source_path = os.path.join(project_root, 'OurPlan', 'DTO')
+destination_ts_file = os.path.join(script_dir, '..', 'interfaces.ts')
+
+# Convertim la cale absolută pentru a evita problemele cu calea relativă
+source_path = os.path.abspath(source_path)
+destination_ts_file = os.path.abspath(destination_ts_file)
+
+print(f'📁 Căutând fișiere .cs în: {source_path}')
+print(f'💾 Fișierul de ieșire va fi: {destination_ts_file}\n')
+
 process_folder_to_ts(source_path, destination_ts_file)

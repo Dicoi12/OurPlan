@@ -13,12 +13,22 @@ export const useGroupsStore = defineStore("groupsStore", {
       groups: [],
     };
   },
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        key: 'groupsStore',
+        storage: localStorage,
+      },
+    ],
+  } as any,
   actions: {
     async getUserGroups(): Promise<IServiceResult<IGroupModel> | undefined> {
       try {
         const data = await fetchApi("Group", "GET");
         var rez = data as IServiceResult<IGroupModel>;
         this.group = rez.result;
+        this.groups = rez.result ? [rez.result] : [];
       } catch (error) {
         console.error("Error getting user groups:", error);
         return undefined;

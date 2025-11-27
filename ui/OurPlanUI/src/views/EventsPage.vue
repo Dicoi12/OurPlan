@@ -73,7 +73,7 @@
       <div class="events-card rounded-2xl shadow-lg overflow-hidden">
         <!-- Day View -->
         <div v-if="currentView === 'day'" class="day-view">
-          <div class="grid grid-cols-1">„
+          <div class="grid grid-cols-1">
             <div class="border-r border-gray-200">
               <div class="sticky top-0 bg-white z-10 border-b border-gray-200 p-4">
                 <h2 class="text-xl font-bold events-text-dark">
@@ -103,15 +103,15 @@
                 <div class="absolute left-20 right-0 pointer-events-none" style="height: 1440px; z-index: 10;">
                   <div
                     v-for="event in getEventsForDayFiltered(getCurrentDateString())"
-                    :key="event.Id"
+                    :key="event.id"
                     :style="getEventStyle(event)"
                     class="absolute left-2 right-2 rounded-lg p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow pointer-events-auto"
                     :class="getEventColorClass(event)"
                     @click.stop
                   >
-                    <div class="font-semibold text-white text-sm truncate">{{ event.Title }}</div>
+                    <div class="font-semibold text-white text-sm truncate">{{ (event as any).title || (event as any).Title }}</div>
                     <div class="text-white text-xs opacity-90">
-                      {{ formatTime(event.StartDate) }} - {{ formatTime(event.EndDate) }}
+                      {{ formatTime((event as any).startDate || (event as any).StartDate) }} - {{ formatTime((event as any).endDate || (event as any).EndDate) }}
                     </div>
                   </div>
                 </div>
@@ -174,15 +174,15 @@
               <!-- Events for this day -->
               <div
                 v-for="event in getEventsForDayFiltered(day.date ?? '')"
-                :key="event.Id"
+                :key="event.id"
                 :style="getEventStyle(event)"
                 class="absolute left-1 right-1 rounded-lg p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow z-10"
                 :class="getEventColorClass(event)"
                 @click.stop
               >
-                <div class="font-semibold text-white text-xs truncate">{{ event.Title }}</div>
+                <div class="font-semibold text-white text-xs truncate">{{ (event as any).title || (event as any).Title }}</div>
                 <div class="text-white text-xs opacity-90">
-                  {{ formatTime(event.StartDate) }}
+                  {{ formatTime((event as any).startDate || (event as any).StartDate) }}
                 </div>
               </div>
             </div>
@@ -230,12 +230,12 @@
               <div class="space-y-1">
                 <div
                   v-for="event in getEventsForDay(day.date || '')"
-                  :key="event.Id"
+                  :key="event.id"
                   class="text-xs p-1.5 rounded cursor-pointer hover:shadow-md transition-shadow truncate"
                   :class="getEventColorClass(event)"
                 >
-                  <div class="font-semibold text-white">{{ event.Title }}</div>
-                  <div class="text-white opacity-90">{{ formatTime(event.StartDate) }}</div>
+                  <div class="font-semibold text-white">{{ (event as any).title || (event as any).Title }}</div>
+                  <div class="text-white opacity-90">{{ formatTime((event as any).startDate || (event as any).StartDate) }}</div>
                 </div>
                 <div
                   v-if="getEventsForDay(day.date || '').length > 3"
@@ -262,7 +262,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, onBeforeMount } from "vue";
 import { useGroupsStore } from "../stores/groupsStore";
 import { useEventStore } from "../stores/eventStore";
 import { useUserStore } from "../stores/userStore";
@@ -273,7 +273,7 @@ import type { IEventModel } from "../interfaces";
 const groupsStore = useGroupsStore();
 const eventStore = useEventStore();
 const userStore = useUserStore();
-const currentView = ref<"day" | "week" | "month">("week");
+const currentView = ref<"day" | "week" | "month">("day");
 const currentDate = ref(new Date());
 const isLoading = ref(false);
 const errorMessage = ref("");
@@ -281,6 +281,10 @@ const isModalOpen = ref(false);
 const selectedDate = ref<Date>(new Date());
 const selectedHour = ref<number | undefined>(undefined);
 
+onBeforeMount(async() => {
+    loadEvents();
+    console.log(eventStore.events);
+});
 
 // Eliminăm onBeforeMount - evenimentele se vor încărca în onMounted pentru grup
 const views = [
@@ -322,8 +326,10 @@ const getCurrentDateString = (): string => {
 const getEventsForDayFiltered = (dateStr: string) => {
   if (!dateStr) return [];
   return displayEvents.value.filter((e: any) => {
-    if (!e.StartDate) return false;
-    const eventDate = new Date(e.StartDate);
+    // Support both camelCase and PascalCase for API compatibility
+    const startDate = e.startDate || e.StartDate;
+    if (!startDate) return false;
+    const eventDate = new Date(startDate);
     const eventDateStr = eventDate.toISOString().split('T')[0];
     return eventDateStr === dateStr;
   });
@@ -432,8 +438,16 @@ const getEventColorClass = (event: any): string => {
 };
 
 const getEventStyle = (event: any): any => {
-  const start = new Date(event.StartDate);
-  const end = new Date(event.EndDate);
+  // Support both camelCase and PascalCase for API compatibility
+  const startDate = event.startDate || event.StartDate;
+  const endDate = event.endDate || event.EndDate;
+  
+  if (!startDate || !endDate) {
+    return { top: '0px', height: '30px' };
+  }
+  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
   
   // Calculate minutes from midnight
   const startMinutes = start.getHours() * 60 + start.getMinutes();
@@ -452,8 +466,11 @@ const getEventStyle = (event: any): any => {
 
 const getEventsForDay = (date: string) => {
   return displayEvents.value.filter((event) => {
-    if (!event.StartDate) return false;
-    const eventDate = new Date(event.StartDate);
+    // Support both camelCase and PascalCase for API compatibility
+    const e = event as any;
+    const startDate = e.startDate || e.StartDate;
+    if (!startDate) return false;
+    const eventDate = new Date(startDate);
     const eventDateStr = eventDate.toISOString().split("T")[0];
     return eventDateStr === date;
   });
@@ -469,7 +486,10 @@ const previousPeriod = () => {
     newDate.setMonth(newDate.getMonth() - 1);
   }
   currentDate.value = newDate;
-  // Evenimentele se vor reîncărca automat prin watcher
+  // Reîncarcă evenimentele pentru data curentă
+  if (groupsStore.group?.id) {
+    loadEvents();
+  }
 };
 
 const nextPeriod = () => {
@@ -482,20 +502,26 @@ const nextPeriod = () => {
     newDate.setMonth(newDate.getMonth() + 1);
   }
   currentDate.value = newDate;
-  // Evenimentele se vor reîncărca automat prin watcher
+  // Reîncarcă evenimentele pentru data curentă
+  if (groupsStore.group?.id) {
+    loadEvents();
+  }
 };
 
 const changeView = (view: "day" | "week" | "month") => {
   currentView.value = view;
   // Reîncarcă evenimentele pentru noul view
-  if (groupsStore.group?.Id) {
+  if (groupsStore.group?.id) {
     loadEvents();
   }
 };
 
 const goToToday = () => {
   currentDate.value = new Date();
-  // Evenimentele se vor reîncărca automat prin watcher
+  // Reîncarcă evenimentele pentru data curentă
+  if (groupsStore.group?.id) {
+    loadEvents();
+  }
 };
 
 const openModalForHour = (hour: number) => {
@@ -527,12 +553,12 @@ const handleSaveEvent = async (eventData: any) => {
     
     // Pregătește evenimentul cu toate datele necesare
     const eventToAdd: IEventModel = {
-      Id: 0, // Va fi setat de server
-      Title: eventData.Title,
-      StartDate: eventData.StartDate,
-      EndDate: eventData.EndDate,
-      CreatedByUserId: userStore.userData.Id,
-      IsShared: eventData.IsShared,
+      id: 0, // Va fi setat de server
+      title: eventData.title,
+      startDate: eventData.startDate,
+      endDate: eventData.endDate,
+      createdByUserId: userStore.userData.id,
+      isShared: eventData.isShared,
     };
     
     // Adaugă evenimentul în coadă (va fi procesat cap-coadă)
@@ -551,7 +577,7 @@ const handleSaveEvent = async (eventData: any) => {
 };
 
 const loadEvents = async () => {
-  if (!groupsStore.group?.Id) {
+  if (!groupsStore.group?.id) {
     errorMessage.value = "No group found. Please join or create a group first.";
     console.warn("No group found, cannot load events");
     return;
@@ -560,10 +586,10 @@ const loadEvents = async () => {
   isLoading.value = true;
   errorMessage.value = "";
   try {
-    console.log("Loading events for group:", groupsStore.group.Id, "View:", currentView.value, "Date:", currentDate.value);
+    console.log("Loading events for group:", groupsStore.group.id, "View:", currentView.value, "Date:", currentDate.value);
     // Trimitem view-mode-ul curent și data curentă
     const events = await eventStore.getEventsForGroup(
-      groupsStore.group.Id,
+      groupsStore.group.id,
       currentView.value,
       currentDate.value
     );
@@ -579,14 +605,14 @@ const loadEvents = async () => {
 // Watch pentru a reîncărca evenimentele când se schimbă data
 // View-ul este gestionat de funcția changeView pentru a evita dublă încărcare
 watch(currentDate, () => {
-  if (groupsStore.group?.Id) {
+  if (groupsStore.group?.id) {
     loadEvents();
   }
 }, { deep: true, immediate: false });
 
 // Watch separat pentru view (ca backup, dar changeView este principalul handler)
 watch(currentView, () => {
-  if (groupsStore.group?.Id) {
+  if (groupsStore.group?.id) {
     loadEvents();
   }
 }, { immediate: false });
