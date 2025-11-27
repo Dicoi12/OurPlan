@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: ourplan-api
+    env: dotnet
+    buildCommand: "dotnet publish -c Release -o out"
+    startCommand: "dotnet out/OurPlan.dll"
+    plan: free
