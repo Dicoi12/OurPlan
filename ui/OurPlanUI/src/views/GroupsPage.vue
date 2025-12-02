@@ -185,10 +185,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { useGroupsStore } from "../stores/groupsStore";
 import { useEventStore } from "../stores/eventStore";
-import router from "../router";
 
 const eventStore = useEventStore();
 const groupsStore = useGroupsStore();

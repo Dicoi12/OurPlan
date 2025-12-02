@@ -29,7 +29,8 @@ export const buildQueryParams = (payload?: Record<string, any>) => {
  * @param endpoint - segmentul de URL, ex: 'Objectives/getById'
  * @param method - metoda HTTP, ex: 'GET', 'POST', 'PUT'
  * @param body - corpul cererii, opțional, doar pentru metodele POST și PUT
- * @param query - obiect cu parametrii query, ex: {id: '123', name: 'example'}
+ * @param query - obiect cu parametrii query, ex: {id: '123', name: 'exampl
+ * e'}
  * @returns răspunsul cererii ca obiect JSON
  */
 const fetchApi = async (
