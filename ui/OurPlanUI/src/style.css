@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
+/* Force light color scheme to prevent system dark mode from affecting the app */
 :root {
+  color-scheme: light;
   /* Cool NeoBlue - Modern Tech Color Palette */
   --color-primary: #2D7DD2;
   --color-accent-blue: #35A7FF;
@@ -9,4 +11,26 @@
   --color-text-muted: #555555;
   --color-background: #F3F4F6;
   --color-card: #FFFFFF;
+}
+
+/* Override system dark mode preferences */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light;
+  }
+  
+  html, body {
+    background-color: var(--color-background) !important;
+    color: var(--color-text-dark) !important;
+  }
+  
+  input, textarea, select, button {
+    color-scheme: light;
+    background-color: #FFFFFF !important;
+    color: var(--color-text-dark) !important;
+  }
+  
+  input::placeholder, textarea::placeholder {
+    color: var(--color-text-muted) !important;
+  }
 }

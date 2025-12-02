@@ -1,11 +1,11 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4"
     @click.self="closeModal"
   >
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
-      <div class="p-6">
+    <div class="modal-container bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 transform transition-all max-h-[95vh] overflow-y-auto">
+      <div class="p-4 sm:p-6">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold events-text-dark">New Event</h2>
@@ -38,12 +38,12 @@
               type="text"
               placeholder="Enter event title"
               required
-              class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              class="modal-input w-full px-3 sm:px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all text-base"
             />
           </div>
 
           <!-- Start Date & Time -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label class="block text-sm font-medium events-text-dark mb-2">
                 Start Date <span class="text-red-500">*</span>
@@ -52,7 +52,7 @@
                 v-model="startDate"
                 type="date"
                 required
-                class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                class="modal-input w-full px-3 sm:px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all text-base"
               />
             </div>
             <div>
@@ -63,13 +63,13 @@
                 v-model="startTime"
                 type="time"
                 required
-                class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                class="modal-input w-full px-3 sm:px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all text-base"
               />
             </div>
           </div>
 
           <!-- End Date & Time -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label class="block text-sm font-medium events-text-dark mb-2">
                 End Date <span class="text-red-500">*</span>
@@ -78,7 +78,7 @@
                 v-model="endDate"
                 type="date"
                 required
-                class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                class="modal-input w-full px-3 sm:px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all text-base"
               />
             </div>
             <div>
@@ -89,7 +89,7 @@
                 v-model="endTime"
                 type="time"
                 required
-                class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                class="modal-input w-full px-3 sm:px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all text-base"
               />
             </div>
           </div>
@@ -276,20 +276,52 @@ const saveEvent = () => {
 </script>
 
 <style scoped>
+/* Force light color scheme for modal */
+.modal-container {
+  color-scheme: light;
+  background-color: #FFFFFF !important;
+  color: var(--color-text-dark) !important;
+}
+
+.modal-input {
+  color-scheme: light;
+  background-color: #FFFFFF !important;
+  color: var(--color-text-dark) !important;
+}
+
+.modal-input::placeholder {
+  color: var(--color-text-muted) !important;
+}
+
+/* Ensure date/time inputs work on mobile */
+.modal-input::-webkit-calendar-picker-indicator {
+  filter: none;
+  opacity: 1;
+}
+
 .events-text-dark {
-  color: var(--color-text-dark);
+  color: var(--color-text-dark) !important;
 }
 
 .events-text-muted {
-  color: var(--color-text-muted);
+  color: var(--color-text-muted) !important;
 }
 
 .events-btn-primary {
   background: linear-gradient(to right, var(--color-primary), var(--color-accent-blue));
+  color: #FFFFFF !important;
 }
 
 .events-btn-primary:hover:not(:disabled) {
   background: linear-gradient(to right, var(--color-accent-blue), var(--color-primary));
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .modal-container {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
 }
 </style>
 

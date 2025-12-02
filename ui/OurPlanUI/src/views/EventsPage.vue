@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 min-h-screen events-page-background">
+  <div class="p-2 sm:p-4 min-h-screen events-page-background events-force-light">
     <!-- Event Modal -->
     <EventModal
       :isOpen="isModalOpen"
@@ -11,38 +11,38 @@
 
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-3xl font-bold events-text-dark mb-2">Calendar</h1>
-        <p class="events-text-muted">View and manage events for your group</p>
+      <div class="mb-4 sm:mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold events-text-dark mb-1 sm:mb-2">Calendar</h1>
+        <p class="events-text-muted text-sm sm:text-base">View and manage events for your group</p>
       </div>
 
       <!-- View Selector and Navigation -->
-      <div class="mb-6 flex items-center justify-between flex-wrap gap-4">
-        <div class="flex items-center gap-2 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
+      <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+        <div class="flex items-center gap-1 sm:gap-2 events-card-bg rounded-xl p-1 shadow-sm border border-gray-100 overflow-x-auto">
           <button
             v-for="view in views"
             :key="view.value"
             @click="changeView(view.value)"
             :class="[
-              'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+              'px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm sm:text-base',
               currentView === view.value
                 ? 'events-btn-active text-white'
                 : 'events-text-muted hover:bg-gray-50'
             ]"
           >
-            <i :class="view.icon" class="mr-2"></i>
-            {{ view.label }}
+            <i :class="view.icon" class="mr-1 sm:mr-2"></i>
+            <span class="hidden xs:inline">{{ view.label }}</span>
           </button>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center gap-2 sm:gap-3">
           <button
             @click="previousPeriod"
             class="p-2 rounded-lg events-icon-bg hover:bg-blue-200 transition-colors"
           >
             <i class="pi pi-chevron-left events-primary"></i>
           </button>
-          <span class="font-semibold events-text-dark min-w-[200px] text-center">
+          <span class="font-semibold events-text-dark min-w-[120px] sm:min-w-[200px] text-center text-sm sm:text-base">
             {{ currentPeriodLabel }}
           </span>
           <button
@@ -53,7 +53,7 @@
           </button>
           <button
             @click="goToToday"
-            class="px-4 py-2 rounded-lg events-btn-secondary font-medium transition-all duration-200"
+            class="px-3 sm:px-4 py-2 rounded-lg events-btn-secondary font-medium transition-all duration-200 text-sm sm:text-base"
           >
             Today
           </button>
@@ -75,8 +75,8 @@
         <div v-if="currentView === 'day'" class="day-view">
           <div class="grid grid-cols-1">
             <div class="border-r border-gray-200">
-              <div class="sticky top-0 bg-white z-10 border-b border-gray-200 p-4">
-                <h2 class="text-xl font-bold events-text-dark">
+              <div class="sticky top-0 events-card-bg z-10 border-b border-gray-200 p-2 sm:p-4">
+                <h2 class="text-base sm:text-xl font-bold events-text-dark">
                   {{ formatDate(currentDate, 'full') }}
                 </h2>
               </div>
@@ -85,7 +85,7 @@
                 <div
                   v-for="hour in hours"
                   :key="hour"
-                  class="absolute left-0 w-20 p-2 text-sm events-text-muted font-medium border-b border-gray-100 z-20"
+                  class="absolute left-0 w-14 sm:w-20 p-1 sm:p-2 text-xs sm:text-sm events-text-muted font-medium border-b border-gray-100 z-20"
                   :style="{ top: `${hour * 60}px`, height: '60px' }"
                 >
                   {{ formatHour(hour) }}
@@ -94,23 +94,23 @@
                 <div
                   v-for="hour in hours"
                   :key="`click-${hour}`"
-                  class="absolute left-20 right-0 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors z-0"
+                  class="absolute left-14 sm:left-20 right-0 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors z-0"
                   :style="{ top: `${hour * 60}px`, height: '60px' }"
                   @click="openModalForHour(hour)"
                   title="Click to add event"
                 ></div>
                 <!-- Events container - placed on top but allows clicks through empty areas -->
-                <div class="absolute left-20 right-0 pointer-events-none" style="height: 1440px; z-index: 10;">
+                <div class="absolute left-14 sm:left-20 right-0 pointer-events-none" style="height: 1440px; z-index: 10;">
                   <div
                     v-for="event in getEventsForDayFiltered(getCurrentDateString())"
                     :key="event.id"
                     :style="getEventStyle(event)"
-                    class="absolute left-2 right-2 rounded-lg p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow pointer-events-auto"
+                    class="absolute left-1 sm:left-2 right-1 sm:right-2 rounded-lg p-1 sm:p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow pointer-events-auto"
                     :class="getEventColorClass(event)"
                     @click.stop
                   >
-                    <div class="font-semibold text-white text-sm truncate">{{ (event as any).title || (event as any).Title }}</div>
-                    <div class="text-white text-xs opacity-90">
+                    <div class="font-semibold text-white text-xs sm:text-sm truncate">{{ (event as any).title || (event as any).Title }}</div>
+                    <div class="text-white text-[10px] sm:text-xs opacity-90">
                       {{ formatTime((event as any).startDate || (event as any).StartDate) }} - {{ formatTime((event as any).endDate || (event as any).EndDate) }}
                     </div>
                   </div>
@@ -121,33 +121,35 @@
         </div>
 
         <!-- Week View -->
-        <div v-if="currentView === 'week'" class="week-view">
-          <div class="grid grid-cols-8 border-b border-gray-200 bg-gray-50">
-            <div class="p-3 border-r border-gray-200"></div>
-            <div
-              v-for="day in weekDays"
-              :key="day.date"
-              class="p-3 text-center border-r border-gray-200 last:border-r-0"
-            >
-              <div class="text-xs events-text-muted mb-1">{{ day.dayName }}</div>
+        <div v-if="currentView === 'week'" class="week-view overflow-x-auto">
+          <div class="min-w-[600px]">
+            <div class="grid grid-cols-8 border-b border-gray-200 events-bg-light">
+              <div class="p-2 sm:p-3 border-r border-gray-200"></div>
               <div
-                :class="[
-                  'w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold text-sm',
-                  day.isToday
-                    ? 'events-btn-active text-white'
-                    : 'events-text-dark bg-white'
-                ]"
+                v-for="day in weekDays"
+                :key="day.date"
+                class="p-2 sm:p-3 text-center border-r border-gray-200 last:border-r-0"
               >
-                {{ day.dayNumber }}
+                <div class="text-xs events-text-muted mb-1">{{ day.dayName }}</div>
+                <div
+                  :class="[
+                    'w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-full flex items-center justify-center font-semibold text-xs sm:text-sm',
+                    day.isToday
+                      ? 'events-btn-active text-white'
+                      : 'events-text-dark events-card-bg'
+                  ]"
+                >
+                  {{ day.dayNumber }}
+                </div>
               </div>
             </div>
           </div>
-          <div class="relative overflow-x-auto" style="height: 1440px;">
+          <div class="relative overflow-x-auto min-w-[600px]" style="height: 1440px;">
             <!-- Time labels column -->
             <div
               v-for="hour in hours"
               :key="hour"
-              class="absolute left-0 w-20 p-2 text-sm events-text-muted font-medium border-r border-gray-200 bg-gray-50 border-b border-gray-100"
+              class="absolute left-0 w-16 sm:w-20 p-1 sm:p-2 text-xs sm:text-sm events-text-muted font-medium border-r border-gray-200 events-bg-light border-b border-gray-100"
               :style="{ top: `${hour * 60}px`, height: '60px' }"
             >
               {{ formatHour(hour) }}
@@ -176,12 +178,12 @@
                 v-for="event in getEventsForDayFiltered(day.date ?? '')"
                 :key="event.id"
                 :style="getEventStyle(event)"
-                class="absolute left-1 right-1 rounded-lg p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow z-10"
+                class="absolute left-0.5 right-0.5 sm:left-1 sm:right-1 rounded-lg p-1 sm:p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow z-10"
                 :class="getEventColorClass(event)"
                 @click.stop
               >
-                <div class="font-semibold text-white text-xs truncate">{{ (event as any).title || (event as any).Title }}</div>
-                <div class="text-white text-xs opacity-90">
+                <div class="font-semibold text-white text-[10px] sm:text-xs truncate">{{ (event as any).title || (event as any).Title }}</div>
+                <div class="text-white text-[10px] sm:text-xs opacity-90 hidden sm:block">
                   {{ formatTime((event as any).startDate || (event as any).StartDate) }}
                 </div>
               </div>
@@ -190,58 +192,61 @@
         </div>
 
         <!-- Month View -->
-        <div v-if="currentView === 'month'" class="month-view">
-          <div class="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
-            <div
-              v-for="dayName in dayNames"
-              :key="dayName"
-              class="p-3 text-center font-semibold events-text-muted text-sm border-r border-gray-200 last:border-r-0"
-            >
-              {{ dayName }}
-            </div>
-          </div>
-          <div class="grid grid-cols-7">
-            <div
-              v-for="day in monthDays"
-              :key="day.date"
-              :class="[
-                'min-h-[120px] p-2 border-r border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors',
-                day.isCurrentMonth
-                  ? 'bg-white'
-                  : 'bg-gray-50',
-                day.isToday
-                  ? 'border-2 border-blue-500'
-                  : ''
-              ]"
-              @click="openModalForDay(day.date ?? '')"
-            >
+        <div v-if="currentView === 'month'" class="month-view overflow-x-auto">
+          <div class="min-w-[320px]">
+            <div class="grid grid-cols-7 border-b border-gray-200 events-bg-light">
               <div
-                :class="[
-                  'text-sm font-semibold mb-1',
-                  day.isToday
-                    ? 'events-primary'
-                    : day.isCurrentMonth
-                    ? 'events-text-dark'
-                    : 'events-text-muted'
-                ]"
+                v-for="dayName in dayNames"
+                :key="dayName"
+                class="p-1 sm:p-3 text-center font-semibold events-text-muted text-xs sm:text-sm border-r border-gray-200 last:border-r-0"
               >
-                {{ day.dayNumber }}
+                <span class="hidden sm:inline">{{ dayName }}</span>
+                <span class="sm:hidden">{{ dayName.charAt(0) }}</span>
               </div>
-              <div class="space-y-1">
+            </div>
+            <div class="grid grid-cols-7">
+              <div
+                v-for="day in monthDays"
+                :key="day.date"
+                :class="[
+                  'min-h-[60px] sm:min-h-[120px] p-1 sm:p-2 border-r border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors',
+                  day.isCurrentMonth
+                    ? 'events-card-bg'
+                    : 'events-bg-light',
+                  day.isToday
+                    ? 'border-2 border-blue-500'
+                    : ''
+                ]"
+                @click="openModalForDay(day.date ?? '')"
+              >
                 <div
-                  v-for="event in getEventsForDay(day.date || '')"
-                  :key="event.id"
-                  class="text-xs p-1.5 rounded cursor-pointer hover:shadow-md transition-shadow truncate"
-                  :class="getEventColorClass(event)"
+                  :class="[
+                    'text-xs sm:text-sm font-semibold mb-0.5 sm:mb-1',
+                    day.isToday
+                      ? 'events-primary'
+                      : day.isCurrentMonth
+                      ? 'events-text-dark'
+                      : 'events-text-muted'
+                  ]"
                 >
-                  <div class="font-semibold text-white">{{ (event as any).title || (event as any).Title }}</div>
-                  <div class="text-white opacity-90">{{ formatTime((event as any).startDate || (event as any).StartDate) }}</div>
+                  {{ day.dayNumber }}
                 </div>
-                <div
-                  v-if="getEventsForDay(day.date || '').length > 3"
-                  class="text-xs events-text-muted cursor-pointer hover:underline"
-                >
-                  +{{ getEventsForDay(day.date || '').length - 3 }} more
+                <div class="space-y-0.5 sm:space-y-1">
+                  <div
+                    v-for="event in getEventsForDay(day.date || '').slice(0, 2)"
+                    :key="event.id"
+                    class="text-xs p-0.5 sm:p-1.5 rounded cursor-pointer hover:shadow-md transition-shadow truncate"
+                    :class="getEventColorClass(event)"
+                  >
+                    <div class="font-semibold text-white truncate text-[10px] sm:text-xs">{{ (event as any).title || (event as any).Title }}</div>
+                    <div class="text-white opacity-90 hidden sm:block">{{ formatTime((event as any).startDate || (event as any).StartDate) }}</div>
+                  </div>
+                  <div
+                    v-if="getEventsForDay(day.date || '').length > 2"
+                    class="text-[10px] sm:text-xs events-text-muted cursor-pointer hover:underline"
+                  >
+                    +{{ getEventsForDay(day.date || '').length - 2 }} more
+                  </div>
                 </div>
               </div>
             </div>
@@ -633,44 +638,59 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Force light color scheme */
+.events-force-light {
+  color-scheme: light;
+}
+
 .events-page-background {
   background: linear-gradient(to bottom right, var(--color-background), var(--color-card), var(--color-background));
+  background-color: var(--color-background) !important;
 }
 
 .events-text-dark {
-  color: var(--color-text-dark);
+  color: var(--color-text-dark) !important;
 }
 
 .events-text-muted {
-  color: var(--color-text-muted);
+  color: var(--color-text-muted) !important;
 }
 
 .events-btn-active {
   background: linear-gradient(to right, var(--color-primary), var(--color-accent-blue));
+  color: #FFFFFF !important;
 }
 
 .events-btn-secondary {
-  background: var(--color-background);
-  color: var(--color-text-dark);
+  background: var(--color-background) !important;
+  color: var(--color-text-dark) !important;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .events-btn-secondary:hover {
-  background: rgba(45, 125, 210, 0.1);
+  background: rgba(45, 125, 210, 0.1) !important;
   border-color: var(--color-primary);
 }
 
 .events-card {
-  background: var(--color-card);
+  background: var(--color-card) !important;
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+.events-card-bg {
+  background-color: var(--color-card) !important;
+}
+
+.events-bg-light {
+  background-color: #F9FAFB !important;
+}
+
 .events-icon-bg {
-  background: rgba(45, 125, 210, 0.1);
+  background: rgba(45, 125, 210, 0.1) !important;
 }
 
 .events-primary {
-  color: var(--color-primary);
+  color: var(--color-primary) !important;
 }
 
 .events-border-primary {
@@ -679,10 +699,29 @@ onMounted(async () => {
 
 .day-view,
 .week-view {
-  min-height: 600px;
+  min-height: 400px;
 }
 
 .month-view {
-  min-height: 500px;
+  min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 640px) {
+  .day-view,
+  .week-view {
+    min-height: 600px;
+  }
+  
+  .month-view {
+    min-height: 500px;
+  }
+}
+
+/* Custom breakpoint for extra small screens */
+@media (max-width: 400px) {
+  .xs\:inline {
+    display: inline !important;
+  }
 }
 </style>
