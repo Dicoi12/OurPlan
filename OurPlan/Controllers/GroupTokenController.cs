@@ -22,9 +22,11 @@ namespace OurPlan.Controllers
         public async Task<IActionResult> GenerateToken(int groupId)
         {
             var result = await _groupTokenService.GenerateToken(groupId);
-            
-            if(result.Result != null)
-                return Ok(result.Result);
+
+            if (result.Result != null)
+            {
+                return Ok(new { token = result.Result });
+            }
             return BadRequest();
         }
 
