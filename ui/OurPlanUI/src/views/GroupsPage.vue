@@ -90,7 +90,7 @@
         <p class="groups-text-muted text-sm">Manage your group and members</p>
       </div>
 
-      <div class="groups-card shadow-2xl rounded-2xl p-8 transform transition-all duration-300 hover:shadow-3xl">
+      <div class="groups-card shadow-2xl rounded-2xl p-8 transform transition-all duration-300 hover:shadow-3xl relative">
         <div class="flex items-center justify-between mb-6 pb-6 border-b groups-border">
           <div>
             <h2 class="text-2xl font-bold groups-text-dark mb-2">
@@ -147,13 +147,23 @@
                 <p class="text-xs groups-text-muted mb-1">Group Invite Code</p>
                 <p class="text-lg font-mono font-bold groups-text-dark break-all">{{ groupToken }}</p>
               </div>
-              <button
-                @click="copyToken"
-                class="flex-shrink-0 p-2 groups-icon-bg rounded-lg hover:bg-blue-200 transition-colors"
-                title="Copy code"
-              >
-                <i class="pi pi-copy groups-primary"></i>
-              </button>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="copyToken"
+                  class="flex-shrink-0 p-2 groups-icon-bg rounded-lg hover:bg-blue-200 transition-colors"
+                  title="Copy code"
+                >
+                  <i class="pi pi-copy groups-primary"></i>
+                </button>
+                <button
+                  v-if="canShare"
+                  @click="shareToken"
+                  class="flex-shrink-0 p-2 groups-icon-bg rounded-lg hover:bg-blue-200 transition-colors"
+                  title="Share code"
+                >
+                  <i class="pi pi-share-alt groups-primary"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -181,6 +191,8 @@
         </div>
       </div>
     </div>
+    
+    <Toast group="groups" />
   </div>
 </template>
 
@@ -188,9 +200,12 @@
 import { ref, onMounted, nextTick } from "vue";
 import { useGroupsStore } from "../stores/groupsStore";
 import { useEventStore } from "../stores/eventStore";
+import { useToast } from "primevue/usetoast";
+import Toast from "primevue/toast";
 
 const eventStore = useEventStore();
 const groupsStore = useGroupsStore();
+const toast = useToast();
 
 // Group code input for join
 const groupCode = ref("");
@@ -199,10 +214,14 @@ const errorMessage = ref("");
 const successMessage = ref("");
 const groupToken = ref("");
 const isGeneratingToken = ref(false);
+const canShare = ref(false);
 
 onMounted(async () => {
   await groupsStore.getUserGroups();
   await eventStore.getEventsForCurrentUser();
+  
+  // Check if Web Share API is available
+  canShare.value = 'share' in navigator;
   
   // Redirect to events page if user has a group
   // Use nextTick to ensure reactive state is updated
@@ -275,12 +294,51 @@ const copyToken = async () => {
   if (!groupToken.value) return;
   try {
     await navigator.clipboard.writeText(groupToken.value);
-    successMessage.value = "Code copied to clipboard!";
-    setTimeout(() => {
-      successMessage.value = "";
-    }, 2000);
+    toast.add({
+      severity: 'success',
+      summary: 'Succes',
+      detail: 'Cod copiat în clipboard!',
+      life: 3000,
+      group: 'groups'
+    });
   } catch (error) {
-    errorMessage.value = "Failed to copy code";
+    toast.add({
+      severity: 'error',
+      summary: 'Eroare',
+      detail: 'Nu s-a putut copia codul',
+      life: 3000,
+      group: 'groups'
+    });
+  }
+};
+
+const shareToken = async () => {
+  if (!groupToken.value) return;
+  
+  if (canShare.value && navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Group Invite Code',
+        text: `Join my group! Use this code: ${groupToken.value}`,
+        url: window.location.href,
+      });
+      toast.add({
+        severity: 'success',
+        summary: 'Succes',
+        detail: 'Cod partajat cu succes!',
+        life: 3000,
+        group: 'groups'
+      });
+    } catch (error: any) {
+      // User cancelled or error occurred
+      if (error.name !== 'AbortError') {
+        // Fallback to copy if share fails
+        await copyToken();
+      }
+    }
+  } else {
+    // Fallback to copy if share is not available
+    await copyToken();
   }
 };
 </script>
@@ -375,6 +433,12 @@ const copyToken = async () => {
   div {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+  }
+  
+  /* Toast on mobile - stays relative to content */
+  .toast-enter-from,
+  .toast-leave-to {
+    transform: translateX(100%);
   }
 }
 </style>

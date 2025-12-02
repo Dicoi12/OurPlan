@@ -31,7 +31,7 @@
             ]"
           >
             <i :class="view.icon" class="mr-1 sm:mr-2"></i>
-            <span class="hidden xs:inline">{{ view.label }}</span>
+            <span>{{ view.label }}</span>
           </button>
         </div>
 
@@ -72,186 +72,31 @@
       <!-- Calendar Views -->
       <div class="events-card rounded-2xl shadow-lg overflow-hidden">
         <!-- Day View -->
-        <div v-if="currentView === 'day'" class="day-view">
-          <div class="grid grid-cols-1">
-            <div class="border-r border-gray-200">
-              <div class="sticky top-0 events-card-bg z-10 border-b border-gray-200 p-2 sm:p-4">
-                <h2 class="text-base sm:text-xl font-bold events-text-dark">
-                  {{ formatDate(currentDate, 'full') }}
-                </h2>
-              </div>
-              <div class="relative" style="height: 1440px;">
-                <!-- Time labels -->
-                <div
-                  v-for="hour in hours"
-                  :key="hour"
-                  class="absolute left-0 w-14 sm:w-20 p-1 sm:p-2 text-xs sm:text-sm events-text-muted font-medium border-b border-gray-100 z-20"
-                  :style="{ top: `${hour * 60}px`, height: '60px' }"
-                >
-                  {{ formatHour(hour) }}
-                </div>
-                <!-- Clickable areas for each hour - placed behind events but clickable -->
-                <div
-                  v-for="hour in hours"
-                  :key="`click-${hour}`"
-                  class="absolute left-14 sm:left-20 right-0 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors z-0"
-                  :style="{ top: `${hour * 60}px`, height: '60px' }"
-                  @click="openModalForHour(hour)"
-                  title="Click to add event"
-                ></div>
-                <!-- Events container - placed on top but allows clicks through empty areas -->
-                <div class="absolute left-14 sm:left-20 right-0 pointer-events-none" style="height: 1440px; z-index: 10;">
-                  <div
-                    v-for="event in getEventsForDayFiltered(getCurrentDateString())"
-                    :key="event.id"
-                    :style="getEventStyle(event)"
-                    class="absolute left-1 sm:left-2 right-1 sm:right-2 rounded-lg p-1 sm:p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow pointer-events-auto"
-                    :class="getEventColorClass(event)"
-                    @click.stop
-                  >
-                    <div class="font-semibold text-white text-xs sm:text-sm truncate">{{ (event as any).title || (event as any).Title }}</div>
-                    <div class="text-white text-[10px] sm:text-xs opacity-90">
-                      {{ formatTime((event as any).startDate || (event as any).StartDate) }} - {{ formatTime((event as any).endDate || (event as any).EndDate) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DayView
+          v-if="currentView === 'day'"
+          :current-date="currentDate"
+          :events="displayEvents"
+          @hour-click="openModalForHour"
+          @event-click="handleEventClick"
+        />
 
         <!-- Week View -->
-        <div v-if="currentView === 'week'" class="week-view overflow-x-auto">
-          <div class="min-w-[600px]">
-            <div class="grid grid-cols-8 border-b border-gray-200 events-bg-light">
-              <div class="p-2 sm:p-3 border-r border-gray-200"></div>
-              <div
-                v-for="day in weekDays"
-                :key="day.date"
-                class="p-2 sm:p-3 text-center border-r border-gray-200 last:border-r-0"
-              >
-                <div class="text-xs events-text-muted mb-1">{{ day.dayName }}</div>
-                <div
-                  :class="[
-                    'w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-full flex items-center justify-center font-semibold text-xs sm:text-sm',
-                    day.isToday
-                      ? 'events-btn-active text-white'
-                      : 'events-text-dark events-card-bg'
-                  ]"
-                >
-                  {{ day.dayNumber }}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="relative overflow-x-auto min-w-[600px]" style="height: 1440px;">
-            <!-- Time labels column -->
-            <div
-              v-for="hour in hours"
-              :key="hour"
-              class="absolute left-0 w-16 sm:w-20 p-1 sm:p-2 text-xs sm:text-sm events-text-muted font-medium border-r border-gray-200 events-bg-light border-b border-gray-100"
-              :style="{ top: `${hour * 60}px`, height: '60px' }"
-            >
-              {{ formatHour(hour) }}
-            </div>
-            <!-- Day columns -->
-            <div
-              v-for="(day, dayIndex) in weekDays"
-              :key="day.date"
-              class="absolute border-r border-gray-100 last:border-r-0"
-              :style="{ 
-                left: `${80 + (dayIndex * 12.85)}%`, 
-                width: '12.85%',
-                height: '1440px'
-              }"
-            >
-              <!-- Clickable hour areas -->
-              <div
-                v-for="hour in hours"
-                :key="`${day.date}-${hour}`"
-                class="absolute cursor-pointer hover:bg-blue-50 transition-colors border-b border-gray-100 z-0"
-                :style="{ top: `${hour * 60}px`, height: '60px', left: 0, right: 0 }"
-                @click="openModalForDayAndHour(day.date ?? '', hour)"
-              ></div>
-              <!-- Events for this day -->
-              <div
-                v-for="event in getEventsForDayFiltered(day.date ?? '')"
-                :key="event.id"
-                :style="getEventStyle(event)"
-                class="absolute left-0.5 right-0.5 sm:left-1 sm:right-1 rounded-lg p-1 sm:p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow z-10"
-                :class="getEventColorClass(event)"
-                @click.stop
-              >
-                <div class="font-semibold text-white text-[10px] sm:text-xs truncate">{{ (event as any).title || (event as any).Title }}</div>
-                <div class="text-white text-[10px] sm:text-xs opacity-90 hidden sm:block">
-                  {{ formatTime((event as any).startDate || (event as any).StartDate) }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <WeekView
+          v-if="currentView === 'week'"
+          :current-date="currentDate"
+          :events="displayEvents"
+          @day-hour-click="openModalForDayAndHour"
+          @event-click="handleEventClick"
+        />
 
         <!-- Month View -->
-        <div v-if="currentView === 'month'" class="month-view overflow-x-auto">
-          <div class="min-w-[320px]">
-            <div class="grid grid-cols-7 border-b border-gray-200 events-bg-light">
-              <div
-                v-for="dayName in dayNames"
-                :key="dayName"
-                class="p-1 sm:p-3 text-center font-semibold events-text-muted text-xs sm:text-sm border-r border-gray-200 last:border-r-0"
-              >
-                <span class="hidden sm:inline">{{ dayName }}</span>
-                <span class="sm:hidden">{{ dayName.charAt(0) }}</span>
-              </div>
-            </div>
-            <div class="grid grid-cols-7">
-              <div
-                v-for="day in monthDays"
-                :key="day.date"
-                :class="[
-                  'min-h-[60px] sm:min-h-[120px] p-1 sm:p-2 border-r border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors',
-                  day.isCurrentMonth
-                    ? 'events-card-bg'
-                    : 'events-bg-light',
-                  day.isToday
-                    ? 'border-2 border-blue-500'
-                    : ''
-                ]"
-                @click="openModalForDay(day.date ?? '')"
-              >
-                <div
-                  :class="[
-                    'text-xs sm:text-sm font-semibold mb-0.5 sm:mb-1',
-                    day.isToday
-                      ? 'events-primary'
-                      : day.isCurrentMonth
-                      ? 'events-text-dark'
-                      : 'events-text-muted'
-                  ]"
-                >
-                  {{ day.dayNumber }}
-                </div>
-                <div class="space-y-0.5 sm:space-y-1">
-                  <div
-                    v-for="event in getEventsForDay(day.date || '').slice(0, 2)"
-                    :key="event.id"
-                    class="text-xs p-0.5 sm:p-1.5 rounded cursor-pointer hover:shadow-md transition-shadow truncate"
-                    :class="getEventColorClass(event)"
-                  >
-                    <div class="font-semibold text-white truncate text-[10px] sm:text-xs">{{ (event as any).title || (event as any).Title }}</div>
-                    <div class="text-white opacity-90 hidden sm:block">{{ formatTime((event as any).startDate || (event as any).StartDate) }}</div>
-                  </div>
-                  <div
-                    v-if="getEventsForDay(day.date || '').length > 2"
-                    class="text-[10px] sm:text-xs events-text-muted cursor-pointer hover:underline"
-                  >
-                    +{{ getEventsForDay(day.date || '').length - 2 }} more
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MonthView
+          v-if="currentView === 'month'"
+          :current-date="currentDate"
+          :events="displayEvents"
+          @day-click="openModalForDay"
+          @event-click="handleEventClick"
+        />
 
         <!-- Empty state -->
         <div
@@ -273,6 +118,9 @@ import { useEventStore } from "../stores/eventStore";
 import { useUserStore } from "../stores/userStore";
 import router from "../router";
 import EventModal from "../components/EventModal.vue";
+import DayView from "../components/views/DayView.vue";
+import WeekView from "../components/views/WeekView.vue";
+import MonthView from "../components/views/MonthView.vue";
 import type { IEventModel } from "../interfaces";
 
 const groupsStore = useGroupsStore();
@@ -298,47 +146,9 @@ const views = [
   { value: "month" as const, label: "Month", icon: "pi pi-calendar-plus" },
 ];
 
-const hours = Array.from({ length: 24 }, (_, i) => i);
-const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 const displayEvents = computed(() => {
   return eventStore.events || [];
 });
-    
-// Helper to get current date as string
-const getCurrentDateString = (): string => {
-  if (!currentDate.value) {
-    const today = new Date().toISOString().split('T')[0];
-    return today || '';
-  }
-  try {
-    const date = currentDate.value instanceof Date 
-      ? currentDate.value 
-      : new Date(currentDate.value);
-    if (isNaN(date.getTime())) {
-      const today = new Date().toISOString().split('T')[0];
-      return today || '';
-    }
-    const dateStr = date.toISOString().split('T')[0];
-    return dateStr || '';
-  } catch {
-    const today = new Date().toISOString().split('T')[0];
-    return today || '';
-  }
-};
-
-// Helper to get events for a specific day
-const getEventsForDayFiltered = (dateStr: string) => {
-  if (!dateStr) return [];
-  return displayEvents.value.filter((e: any) => {
-    // Support both camelCase and PascalCase for API compatibility
-    const startDate = e.startDate || e.StartDate;
-    if (!startDate) return false;
-    const eventDate = new Date(startDate);
-    const eventDateStr = eventDate.toISOString().split('T')[0];
-    return eventDateStr === dateStr;
-  });
-};
 
 const currentPeriodLabel = computed(() => {
   if (currentView.value === "day") {
@@ -353,49 +163,6 @@ const currentPeriodLabel = computed(() => {
   }
 });
 
-const weekDays = computed(() => {
-  const start = getWeekStart(currentDate.value);
-  return Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(start);
-    date.setDate(date.getDate() + i);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dayDate = new Date(date);
-    dayDate.setHours(0, 0, 0, 0);
-    return {
-      date: dayDate.toISOString().split("T")[0],
-      dayName: dayNames[date.getDay()],
-      dayNumber: date.getDate(),
-      isToday: dayDate.getTime() === today.getTime(),
-    };
-  });
-});
-
-const monthDays = computed(() => {
-  const year = currentDate.value.getFullYear();
-  const month = currentDate.value.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - startDate.getDay());
-  
-  const days = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  for (let i = 0; i < 42; i++) {
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() + i);
-    const dayDate = new Date(date);
-    dayDate.setHours(0, 0, 0, 0);
-    days.push({
-      date: dayDate.toISOString().split("T")[0],
-      dayNumber: date.getDate(),
-      isCurrentMonth: date.getMonth() === month,
-      isToday: dayDate.getTime() === today.getTime(),
-    });
-  }
-  return days;
-});
 
 const getWeekStart = (date: Date): Date => {
   const d = new Date(date);
@@ -417,68 +184,6 @@ const formatDate = (date: Date, format: "full" | "short" | "month"): string => {
       day: "numeric",
     });
   }
-};
-
-const formatTime = (date: Date | string): string => {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-};
-
-const formatHour = (hour: number): string => {
-  if (hour === 0) return "12 AM";
-  if (hour < 12) return `${hour} AM`;
-  if (hour === 12) return "12 PM";
-  return `${hour - 12} PM`;
-};
-
-const getEventColorClass = (event: any): string => {
-  const colors: Record<string, string> = {
-    blue: "bg-blue-500",
-    green: "bg-green-500",
-    orange: "bg-orange-500",
-    purple: "bg-purple-500",
-    red: "bg-red-500",
-  };
-  return colors[event.color || "blue"] || "bg-gray-500";
-};
-
-const getEventStyle = (event: any): any => {
-  // Support both camelCase and PascalCase for API compatibility
-  const startDate = event.startDate || event.StartDate;
-  const endDate = event.endDate || event.EndDate;
-  
-  if (!startDate || !endDate) {
-    return { top: '0px', height: '30px' };
-  }
-  
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  
-  // Calculate minutes from midnight
-  const startMinutes = start.getHours() * 60 + start.getMinutes();
-  const endMinutes = end.getHours() * 60 + end.getMinutes();
-  const duration = endMinutes - startMinutes;
-  
-  // Each hour is 60px, so each minute is 1px
-  const top = startMinutes; // Position in pixels from top of day
-  const height = Math.max(duration, 30); // Minimum 30px height
-  
-  return {
-    top: `${top}px`,
-    height: `${height}px`,
-  };
-};
-
-const getEventsForDay = (date: string) => {
-  return displayEvents.value.filter((event) => {
-    // Support both camelCase and PascalCase for API compatibility
-    const e = event as any;
-    const startDate = e.startDate || e.StartDate;
-    if (!startDate) return false;
-    const eventDate = new Date(startDate);
-    const eventDateStr = eventDate.toISOString().split("T")[0];
-    return eventDateStr === date;
-  });
 };
 
 const previousPeriod = () => {
@@ -545,6 +250,11 @@ const openModalForDay = (date: string) => {
   selectedDate.value = new Date(date);
   selectedHour.value = new Date().getHours(); // Default to current hour
   isModalOpen.value = true;
+};
+
+const handleEventClick = (event: IEventModel) => {
+  // TODO: Implement event click handler (e.g., open edit modal or show details)
+  console.log('Event clicked:', event);
 };
 
 const closeModal = () => {
@@ -695,27 +405,6 @@ onMounted(async () => {
 
 .events-border-primary {
   border-color: var(--color-primary);
-}
-
-.day-view,
-.week-view {
-  min-height: 400px;
-}
-
-.month-view {
-  min-height: 300px;
-}
-
-/* Responsive adjustments */
-@media (min-width: 640px) {
-  .day-view,
-  .week-view {
-    min-height: 600px;
-  }
-  
-  .month-view {
-    min-height: 500px;
-  }
 }
 
 /* Custom breakpoint for extra small screens */
