@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import fetchApi from "../stores/fetch";
 import type { IGroupModel } from "../interfaces";
-import type { IServiceResult } from "../types/InteralInterfaces";
+import type { IServiceResult, IToken } from "../types/InteralInterfaces";
 
 export const useGroupsStore = defineStore("groupsStore", {
   state: (): {
@@ -80,8 +80,8 @@ export const useGroupsStore = defineStore("groupsStore", {
     async generateGroupToken(groupId: number): Promise<string | undefined> {
       try {
         const data = await fetchApi("GroupToken/groupId", "GET", undefined, { groupId });
-        var rez = data as IServiceResult<string | undefined>;
-        return rez.result;
+        var rez = data as IToken;
+        return rez.token;
       } catch (error) {
         console.error("Error generating group token:", error);
         throw error;
