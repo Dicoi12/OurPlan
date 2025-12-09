@@ -1,7 +1,7 @@
 import { getCookie } from "./helper";
 
-// const BASE_URL = "http://localhost:5000/api";
-const BASE_URL = "https://fitness-there-borders-eastern.trycloudflare.com/api";
+const BASE_URL = "https://localhost:7278/api";
+// const BASE_URL = "https://fitness-there-borders-eastern.trycloudflare.com/api";
 
 /**
  * Funcția pentru a construi query params dintr-un obiect payload.

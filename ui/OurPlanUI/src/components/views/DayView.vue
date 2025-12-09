@@ -26,6 +26,14 @@
             @click="handleHourClick(hour)"
             title="Click to add event"
           ></div>
+          <!-- Linie roșie pentru ora curentă -->
+          <div
+            v-if="isToday"
+            class="absolute current-time-line"
+            :style="nowLineStyle"
+          >
+            <span class="current-time-dot"></span>
+          </div>
           <!-- Events container - placed on top but allows clicks through empty areas -->
           <div class="absolute left-14 sm:left-20 right-0 pointer-events-none" style="height: 1440px; z-index: 10;">
             <div
@@ -33,7 +41,7 @@
               :key="event.id"
               :style="getEventStyleWithLayout(event)"
               class="absolute rounded-lg p-1 sm:p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow pointer-events-auto"
-              :class="getEventColorClass(event)"
+              :class="[getEventColorClass(event), { 'event-current': isEventOngoing(event) }]"
               @click.stop="handleEventClick(event)"
             >
               <div class="font-semibold text-white text-xs sm:text-sm truncate">
@@ -52,7 +60,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import type { IEventModel } from '../../interfaces';
 
 interface Props {
@@ -77,7 +85,32 @@ interface EventWithLayout extends IEventModel {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
+const now = ref(new Date());
+let tickId: number | undefined;
+
 const hours = Array.from({ length: 24 }, (_, i) => i);
+
+const isToday = computed(() => {
+  const date = props.currentDate instanceof Date ? props.currentDate : new Date(props.currentDate);
+  const today = new Date();
+  return date.toDateString() === today.toDateString();
+});
+
+const currentMinutes = computed(() => now.value.getHours() * 60 + now.value.getMinutes());
+const nowLineStyle = computed(() => ({ top: `${currentMinutes.value}px` }));
+
+onMounted(() => {
+  // Actualizează poziția liniei de timp curente o dată pe minut
+  tickId = window.setInterval(() => {
+    now.value = new Date();
+  }, 60_000);
+});
+
+onUnmounted(() => {
+  if (tickId) {
+    clearInterval(tickId);
+  }
+});
 
 const getCurrentDateString = (): string => {
   if (!props.currentDate) {
@@ -312,6 +345,14 @@ const getEventStyleWithLayout = (event: EventWithLayout): any => {
   }
 };
 
+const isEventOngoing = (event: any): boolean => {
+  if (!isToday.value) return false;
+  const start = new Date(event.startDate || event.StartDate);
+  const end = new Date(event.endDate || event.EndDate);
+  const current = now.value;
+  return start <= current && current <= end;
+};
+
 const handleHourClick = (hour: number) => {
   emit('hour-click', hour);
 };
@@ -324,6 +365,33 @@ const handleEventClick = (event: IEventModel) => {
 <style scoped>
 .day-view {
   min-height: 400px;
+}
+
+.current-time-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #ef4444; /* roșu */
+  z-index: 30;
+  transform: translateY(-1px);
+}
+
+.current-time-line .current-time-dot {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+}
+
+.event-current {
+  filter: brightness(1.15);
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
 }
 
 @media (min-width: 640px) {

@@ -54,3 +54,17 @@ export interface IExpenseModel {
   createdByUserId: number;
   description?: string;
 }
+
+export interface ITaskModel {
+  id: number;
+  title: string;
+  description?: string;
+  dueDate?: Date | string;
+  priority: "low" | "medium" | "high";
+  status: "pending" | "in_progress" | "completed";
+  createdByUserId: number;
+  groupId?: number;
+  isCompleted: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
