@@ -30,6 +30,11 @@ const router = createRouter({
       component: defineAsyncComponent(() => import("./views/ExpensesPage.vue")),
       meta: { requiresAuth: true },
     },
+    {
+      path: "/tasks",
+      component: defineAsyncComponent(() => import("./views/TasksPage.vue")),
+      meta: { requiresAuth: true },
+    },
   ],
 });
 router.beforeEach(async (to, _from, next) => {

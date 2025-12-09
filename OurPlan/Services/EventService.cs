@@ -230,5 +230,142 @@ namespace OurPlan.Services
             }
             return result;
         }
+
+        public async Task<ServiceResult<string>> ExportEventsToICal(int? groupId = null)
+        {
+            var result = new ServiceResult<string>();
+
+            try
+            {
+                var currentUser = _currentUserService.UserId;
+                if (currentUser == null)
+                {
+                    result.ValidationMessage.Add("User not authenticated");
+                    return result;
+                }
+
+                // Calculăm intervalul: de la ziua curentă până la 30 de zile în viitor
+                var startDate = DateTime.UtcNow.Date;
+                var endDate = startDate.AddDays(30);
+
+                List<EventModel> events;
+
+                if (groupId.HasValue)
+                {
+                    // Export evenimente din grup
+                    var memberGroup = await _context.UserGroups
+                        .AnyAsync(g => g.UserId == currentUser && g.GroupId == groupId.Value);
+                    if (!memberGroup)
+                    {
+                        result.ValidationMessage.Add("Nu ai permisiunea sa vezi evenimentele acestui grup");
+                        return result;
+                    }
+
+                    var groupUserId = await _context.UserGroups
+                        .Where(g => g.GroupId == groupId.Value)
+                        .Select(g => g.UserId)
+                        .ToListAsync();
+
+                    events = await _context.Events
+                        .Where(e =>
+                            groupUserId.Contains(e.CreatedByUserId) &&
+                            e.StartDate >= startDate &&
+                            e.StartDate < endDate)
+                        .Select(e => new EventModel
+                        {
+                            Id = e.Id,
+                            Title = e.Title,
+                            Description = e.Description,
+                            StartDate = e.StartDate,
+                            EndDate = e.EndDate,
+                            Location = e.Location,
+                            IsShared = e.IsShared,
+                            ReminderMinutesBefore = e.ReminderMinutesBefore,
+                            CreatedByUserId = e.CreatedByUserId
+                        })
+                        .ToListAsync();
+                }
+                else
+                {
+                    // Export evenimente personale
+                    events = await _context.Events
+                        .Where(e =>
+                            e.CreatedByUserId == currentUser &&
+                            e.StartDate >= startDate &&
+                            e.StartDate < endDate)
+                        .Select(e => new EventModel
+                        {
+                            Id = e.Id,
+                            Title = e.Title,
+                            Description = e.Description,
+                            StartDate = e.StartDate,
+                            EndDate = e.EndDate,
+                            Location = e.Location,
+                            IsShared = e.IsShared,
+                            ReminderMinutesBefore = e.ReminderMinutesBefore,
+                            CreatedByUserId = e.CreatedByUserId
+                        })
+                        .ToListAsync();
+                }
+
+                var icalContent = ICalendarService.ConvertEventsToICal(events);
+                result.Result = icalContent;
+            }
+            catch (Exception ex)
+            {
+                result.ValidationMessage.Add($"An error occurred while exporting events: {ex.Message}");
+            }
+
+            return result;
+        }
+
+        public async Task<ServiceResult<List<EventModel>>> ImportEventsFromICal(string icalContent, int? groupId = null)
+        {
+            var result = new ServiceResult<List<EventModel>>();
+
+            try
+            {
+                var currentUser = _currentUserService.UserId;
+                if (currentUser == null)
+                {
+                    result.ValidationMessage.Add("User not authenticated");
+                    return result;
+                }
+
+                // Parsează evenimentele din iCal
+                var importedEvents = ICalendarService.ParseICalToEvents(icalContent);
+
+                // Filtrează doar evenimentele din următoarele 30 de zile
+                var startDate = DateTime.UtcNow.Date;
+                var endDate = startDate.AddDays(30);
+
+                var validEvents = importedEvents
+                    .Where(e => e.StartDate >= startDate && e.StartDate < endDate)
+                    .ToList();
+
+                var createdEvents = new List<EventModel>();
+
+                foreach (var eventModel in validEvents)
+                {
+                    // Setăm utilizatorul curent ca creator
+                    eventModel.CreatedByUserId = (int)currentUser;
+
+                    // Creează evenimentul în baza de date
+                    var createResult = await CreateEvent(eventModel);
+                    if (createResult.Result != null)
+                    {
+                        createdEvents.Add(createResult.Result);
+                    }
+                }
+
+                result.Result = createdEvents;
+            }
+            catch (Exception ex)
+            {
+                result.ValidationMessage.Add($"An error occurred while importing events: {ex.Message}");
+            }
+
+            return result;
+        }
     }
 }

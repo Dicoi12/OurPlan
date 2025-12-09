@@ -1,18 +1,1 @@
-# .dockerignore pentru frontend
-node_modules
-npm-debug.log
-dist
-.dev-dist
-.git
-.gitignore
-.env.local
-.env.*.local
-*.log
-.DS_Store
-coverage
-.vscode
-.idea
-*.swp
-*.swo
-*~
 
