@@ -1,7 +1,7 @@
 import { getCookie } from "./helper";
 
 // const BASE_URL = "https://dish-institutions-representative-idol.trycloudflare.com";
-const BASE_URL = "https://dish-institutions-representative-idol.trycloudflare.com";
+const BASE_URL = "https://dish-institutions-representative-idol.trycloudflare.com/api";
 
 /**
  * Funcția pentru a construi query params dintr-un obiect payload.
