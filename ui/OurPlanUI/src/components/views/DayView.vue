@@ -51,6 +51,10 @@
                 {{ formatTime((event as any).startDate || (event as any).StartDate) }} - 
                 {{ formatTime((event as any).endDate || (event as any).EndDate) }}
               </div>
+              <div v-if="(event as any).user?.username" class="text-white text-[10px] sm:text-xs opacity-75 mt-0.5 flex items-center gap-1">
+                <i class="pi pi-user text-[8px] sm:text-[10px]"></i>
+                {{ (event as any).user.username }}
+              </div>
             </div>
           </div>
         </div>
@@ -62,6 +66,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import type { IEventModel } from '../../interfaces';
+import { useUserStore } from '../../stores/userStore';
 
 interface Props {
   currentDate: Date;
@@ -85,6 +90,7 @@ interface EventWithLayout extends IEventModel {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
+const userStore = useUserStore();
 const now = ref(new Date());
 let tickId: number | undefined;
 
@@ -291,14 +297,15 @@ const formatHour = (hour: number): string => {
 };
 
 const getEventColorClass = (event: any): string => {
-  const colors: Record<string, string> = {
-    blue: "bg-blue-500",
-    green: "bg-green-500",
-    orange: "bg-orange-500",
-    purple: "bg-purple-500",
-    red: "bg-red-500",
-  };
-  return colors[event.color || "blue"] || "bg-gray-500";
+  // Verificăm dacă evenimentul este al utilizatorului curent
+  const isMyEvent = event.createdByUserId === userStore.userData?.id;
+  
+  // Evenimentele utilizatorului curent sunt albastre, ale altora sunt verzi
+  if (isMyEvent) {
+    return "bg-blue-500";
+  } else {
+    return "bg-green-500";
+  }
 };
 
 const getEventStyleWithLayout = (event: EventWithLayout): any => {

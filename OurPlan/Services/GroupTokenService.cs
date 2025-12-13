@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OurPlan.Data;
-using OurPlan.DTO;
 using OurPlan.Entity;
 using OurPlan.Helpers;
 using OurPlan.Services.Interfaces;

@@ -5,8 +5,10 @@
       :isOpen="isModalOpen"
       :initialDate="selectedDate"
       :initialHour="selectedHour"
+      :editingEvent="editingEvent"
       @close="closeModal"
       @save="handleSaveEvent"
+      @delete="handleDeleteEvent"
     />
 
     <div class="max-w-7xl mx-auto">
@@ -133,6 +135,7 @@ const errorMessage = ref("");
 const isModalOpen = ref(false);
 const selectedDate = ref<Date>(new Date());
 const selectedHour = ref<number | undefined>(undefined);
+const editingEvent = ref<IEventModel | null>(null);
 
 onBeforeMount(async() => {
     loadEvents();
@@ -235,30 +238,38 @@ const goToToday = () => {
 };
 
 const openModalForHour = (hour: number) => {
+  editingEvent.value = null; // Reset editing mode
   selectedDate.value = new Date(currentDate.value);
   selectedHour.value = hour;
   isModalOpen.value = true;
 };
 
 const openModalForDayAndHour = (date: string, hour: number) => {
+  editingEvent.value = null; // Reset editing mode
   selectedDate.value = new Date(date);
   selectedHour.value = hour;
   isModalOpen.value = true;
 };
 
 const openModalForDay = (date: string) => {
+  editingEvent.value = null; // Reset editing mode
   selectedDate.value = new Date(date);
   selectedHour.value = new Date().getHours(); // Default to current hour
   isModalOpen.value = true;
 };
 
 const handleEventClick = (event: IEventModel) => {
-  // TODO: Implement event click handler (e.g., open edit modal or show details)
-  console.log('Event clicked:', event);
+  editingEvent.value = event;
+  // Setează data și ora pentru modal
+  const eventStartDate = new Date(event.startDate);
+  selectedDate.value = eventStartDate;
+  selectedHour.value = eventStartDate.getHours();
+  isModalOpen.value = true;
 };
 
 const closeModal = () => {
   isModalOpen.value = false;
+  editingEvent.value = null;
 };
 
 const handleSaveEvent = async (eventData: any) => {
@@ -266,26 +277,57 @@ const handleSaveEvent = async (eventData: any) => {
     isLoading.value = true;
     errorMessage.value = "";
     
-    // Pregătește evenimentul cu toate datele necesare
-    const eventToAdd: IEventModel = {
-      id: 0, // Va fi setat de server
-      title: eventData.title,
-      startDate: eventData.startDate,
-      endDate: eventData.endDate,
-      createdByUserId: userStore.userData.id,
-      isShared: eventData.isShared,
-    };
-    
-    // Adaugă evenimentul în coadă (va fi procesat cap-coadă)
-    await eventStore.queueEvent(eventToAdd);
+    if (editingEvent.value && eventData.id) {
+      // Modul de editare - actualizează evenimentul existent
+      const eventToUpdate: IEventModel = {
+        id: eventData.id,
+        title: eventData.title,
+        startDate: eventData.startDate,
+        endDate: eventData.endDate,
+        createdByUserId: editingEvent.value.createdByUserId, // Păstrează creatorul original
+        isShared: eventData.isShared,
+      };
+      
+      await eventStore.updateEvent(eventToUpdate);
+    } else {
+      // Modul de creare - adaugă eveniment nou
+      const eventToAdd: IEventModel = {
+        id: 0, // Va fi setat de server
+        title: eventData.title,
+        startDate: eventData.startDate,
+        endDate: eventData.endDate,
+        createdByUserId: userStore.userData.id,
+        isShared: eventData.isShared,
+      };
+      
+      // Adaugă evenimentul în coadă (va fi procesat cap-coadă)
+      await eventStore.queueEvent(eventToAdd);
+    }
     
     // Evenimentele vor fi actualizate automat de store după procesare
-    // Nu mai este nevoie să adăugăm manual în listă
     
     // Close modal
     closeModal();
   } catch (error: any) {
     errorMessage.value = error?.message || "Failed to save event";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleDeleteEvent = async (eventId: number) => {
+  try {
+    isLoading.value = true;
+    errorMessage.value = "";
+    
+    await eventStore.deleteEvent(eventId);
+    
+    // Evenimentele vor fi actualizate automat de store după ștergere
+    
+    // Close modal
+    closeModal();
+  } catch (error: any) {
+    errorMessage.value = error?.message || "Failed to delete event";
   } finally {
     isLoading.value = false;
   }

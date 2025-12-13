@@ -49,8 +49,12 @@
               <div class="font-semibold text-white truncate text-[10px] sm:text-xs">
                 {{ (event as any).title || (event as any).Title }}
               </div>
-              <div class="text-white opacity-90 hidden sm:block">
+              <div class="text-white opacity-90 hidden sm:block text-[9px] sm:text-[10px]">
                 {{ formatTime((event as any).startDate || (event as any).StartDate) }}
+              </div>
+              <div v-if="(event as any).user?.username" class="text-white opacity-75 hidden sm:block text-[9px] sm:text-[10px] mt-0.5 flex items-center gap-1">
+                <i class="pi pi-user text-[8px]"></i>
+                <span class="truncate">{{ (event as any).user.username }}</span>
               </div>
             </div>
             <div
@@ -69,6 +73,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import type { IEventModel } from '../../interfaces';
+import { useUserStore } from '../../stores/userStore';
 
 interface Props {
   currentDate: Date;
@@ -83,6 +88,7 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
+const userStore = useUserStore();
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const monthDays = computed(() => {
@@ -128,14 +134,15 @@ const formatTime = (date: Date | string): string => {
 };
 
 const getEventColorClass = (event: any): string => {
-  const colors: Record<string, string> = {
-    blue: "bg-blue-500",
-    green: "bg-green-500",
-    orange: "bg-orange-500",
-    purple: "bg-purple-500",
-    red: "bg-red-500",
-  };
-  return colors[event?.color || "blue"] || "bg-gray-500";
+  // Verificăm dacă evenimentul este al utilizatorului curent
+  const isMyEvent = event?.createdByUserId === userStore.userData?.id;
+  
+  // Evenimentele utilizatorului curent sunt albastre, ale altora sunt verzi
+  if (isMyEvent) {
+    return "bg-blue-500";
+  } else {
+    return "bg-green-500";
+  }
 };
 
 const handleDayClick = (date: string) => {

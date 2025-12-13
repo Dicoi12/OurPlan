@@ -45,13 +45,13 @@ namespace OurPlan.Services
                     .Where(g => g.GroupId == groupId)
                     .Select(g => g.UserId)
                     .ToListAsync();
-                
+
                 var targetDate = date?.Date ?? DateTime.UtcNow.Date;
                 //if (date.HasValue && date.Value.Kind != DateTimeKind.Utc)
                 //{
                 //    targetDate = date.Value.ToUniversalTime().Date;
                 //}
-                
+
                 DateTime startDate;
                 DateTime endDate;
 
@@ -84,11 +84,11 @@ namespace OurPlan.Services
                 {
                     endDate = DateTime.SpecifyKind(endDate, DateTimeKind.Utc);
                 }
-                
+
                 var startDateUtc = startDate;
                 var endDateUtc = endDate;
 
-                var events = await _context.Events
+                var events = await _context.Events.Include(x => x.User)
                     .Where(e =>
                         groupUserId.Contains(e.CreatedByUserId) &&
                         (
@@ -100,21 +100,9 @@ namespace OurPlan.Services
                             (e.StartDate <= startDateUtc && e.EndDate >= endDateUtc)
                         )
                     )
-                    .Select(e => new EventModel
-                    {
-                        Id = e.Id,
-                        Title = e.Title,
-                        Description = e.Description,
-                        StartDate = e.StartDate,
-                        EndDate = e.EndDate,
-                        Location = e.Location,
-                        IsShared = e.IsShared,
-                        ReminderMinutesBefore = e.ReminderMinutesBefore,
-                        CreatedByUserId = e.CreatedByUserId
-                    })
                     .ToListAsync();
 
-                result.Result = events;
+                result.Result = _mapper.Map<List<EventModel>>(events);
             }
             catch (Exception ex)
             {
@@ -123,7 +111,7 @@ namespace OurPlan.Services
 
             return result;
         }
-        
+
         public async Task<ServiceResult<EventModel>> CreateEvent(EventModel model)
         {
             var result = new ServiceResult<EventModel>();
@@ -153,12 +141,16 @@ namespace OurPlan.Services
         public async Task<ServiceResult<EventModel>> DeleteEvent(int eventId)
         {
             ServiceResult<EventModel> result = new();
-            var entity = _context.Events.FirstOrDefault(e => e.Id == eventId);
+            var currentUserId = _currentUserService.UserId;
+            var entity = _context.Events.FirstOrDefault(e => e.Id == eventId && e.CreatedByUserId == currentUserId);
             if (entity == null)
             {
                 result.ValidationMessage.Add("Event not found");
                 return result;
             }
+
+            _context.Remove(entity);
+            await _context.SaveChangesAsync();
 
             return result;
         }
@@ -183,7 +175,6 @@ namespace OurPlan.Services
                         Description = e.Description,
                         StartDate = e.StartDate,
                         EndDate = e.EndDate,
-                        User = e.User,
                         IsShared = e.IsShared,
                         Location = e.Location
                     })

@@ -145,6 +145,54 @@ export const useEventStore = defineStore("eventStore", {
       // Păstrăm metoda veche pentru compatibilitate, dar o redirecționăm către coadă
       return this.queueEvent(event);
     },
+    async updateEvent(event: IEventModel): Promise<IServiceResult<IEventModel | undefined>> {
+      try {
+        const data = await fetchApi(`Event/${event.id}`, "PUT", event);
+        const result = data as IServiceResult<IEventModel | undefined>;
+        
+        // Dacă actualizarea a reușit, reîncarcă evenimentele
+        if (result && result.result) {
+          if (this.lastGroupId) {
+            await this.getEventsForGroup(
+              this.lastGroupId,
+              this.lastViewMode || "day",
+              this.lastDate
+            );
+          } else {
+            await this.getEventsForCurrentUser();
+          }
+        }
+        
+        return result;
+      } catch (error) {
+        console.error("Error updating event:", error);
+        throw error;
+      }
+    },
+    async deleteEvent(eventId: number) {
+      try {
+        const data = await fetchApi(`Event/${eventId}`, "DELETE");
+        const result = data as IServiceResult<IEventModel | undefined>;
+        
+        // Dacă ștergerea a reușit, reîncarcă evenimentele
+        if (result) {
+          if (this.lastGroupId) {
+            await this.getEventsForGroup(
+              this.lastGroupId,
+              this.lastViewMode || "day",
+              this.lastDate
+            );
+          } else {
+            await this.getEventsForCurrentUser();
+          }
+        }
+        
+        return result;
+      } catch (error) {
+        console.error("Error deleting event:", error);
+        throw error;
+      }
+    },
   },
   getters: {},
 });

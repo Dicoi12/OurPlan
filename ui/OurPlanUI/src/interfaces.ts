@@ -5,6 +5,9 @@ export interface IEventModel {
   endDate: Date;
   createdByUserId: number;
   isShared: boolean;
+  user?: {
+    username: string;
+  };
 }
 
 export interface IGroupModel {

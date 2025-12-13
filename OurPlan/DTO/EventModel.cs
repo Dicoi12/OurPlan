@@ -24,7 +24,7 @@ namespace OurPlan.DTO
 
      
         public int CreatedByUserId { get; set; }
-        public virtual User? User { get; set; }
+        public virtual UserModel? User { get; set; }
 
         public bool IsShared { get; set; } = true;
 
