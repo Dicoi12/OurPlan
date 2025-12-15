@@ -21,7 +21,7 @@ namespace OurPlan.Entity
         
         [StringLength(1000)]
         
-        public string Description { get; set; } 
+        public string? Description { get; set; } 
         
         public TaskPriority Priority { get; set; }
         
