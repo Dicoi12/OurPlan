@@ -20,15 +20,39 @@ const router = createRouter({
       component: defineAsyncComponent(() => import("./views/GroupsPage.vue")),
       meta: { requiresAuth: true },
     },
+    {
+      path: "/events",
+      component: defineAsyncComponent(() => import("./views/EventsPage.vue")),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/cheltuieli",
+      component: defineAsyncComponent(() => import("./views/ExpensesPage.vue")),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/tasks",
+      component: defineAsyncComponent(() => import("./views/TasksPage.vue")),
+      meta: { requiresAuth: true },
+    },
   ],
 });
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useUserStore();
   authStore.syncTokenFromCookie();
-  if (to.meta.requiresAuth && authStore.isAuthenticated === false) {
-    next("/login");
-  } else {
-    next();
+  
+  if (to.meta.requiresAuth) {
+    if (authStore.isAuthenticated === false) {
+      next("/login");
+      return;
+    }
+    
+    // Dacă utilizatorul este autentificat dar nu are date, le încărcăm
+    if (authStore.isAuthenticated && !authStore.hasUserData) {
+      await authStore.loadCurrentUser();
+    }
   }
+  
+  next();
 });
 export default router;

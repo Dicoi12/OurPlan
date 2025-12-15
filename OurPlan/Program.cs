@@ -26,7 +26,6 @@ try
 }
 catch (FormatException)
 {
-    // nu e Base64 — folosește valoarea originală
     connectionString = rawConn;
 }
 

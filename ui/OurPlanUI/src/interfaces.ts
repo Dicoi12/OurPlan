@@ -1,46 +1,70 @@
 export interface IEventModel {
-  Id: number;
-  Title: string;
-  StartDate: Date;
-  EndDate: Date;
-  CreatedByUserId: number;
-  IsShared: boolean;
+  id: number;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  createdByUserId: number;
+  isShared: boolean;
 }
 
 export interface IGroupModel {
-  Id: number;
-  Name: string;
-  CreatedByUserId: number;
-  UserGropus: IUserGroup[];
+  id: number;
+  name: string;
+  createdByUserId: number;
+  userGroups: IUserGroup[];
 }
 
 export interface IGroupTokenModel {
-  Id: number;
-  GroupId: number;
-  Token: string;
-  ExpiryDate: Date;
+  id: number;
+  groupId: number;
+  token: string;
+  expiryDate: Date;
 }
 
 export interface ILoginModel {
-  Email: string;
-  Password: string;
+  email: string;
+  password: string;
 }
 
 export interface IRegisterModel {
-  Username: string;
-  Email: string;
-  Password: string;
+  username: string;
+  email: string;
+  password: string;
 }
 
 export interface IUserModel {
-  Id: number;
-  Username: string;
-  Email: string;
-  CreatedAt: Date;
+  id: number;
+  username: string;
+  email: string;
+  createdAt: Date;
 }
 
 export interface IUserGroup {
-  UserId: number;
-  GroupId: number;
-  Role: number;
+  userId: number;
+  groupId: number;
+  role: number;
+}
+
+export interface IExpenseModel {
+  id: number;
+  title: string;
+  amount: number;
+  category: string;
+  date: Date | string;
+  createdByUserId: number;
+  description?: string;
+}
+
+export interface ITaskModel {
+  id: number;
+  title: string;
+  description?: string;
+  dueDate?: Date | string;
+  priority: "low" | "medium" | "high";
+  status: "pending" | "in_progress" | "completed";
+  createdByUserId: number;
+  groupId?: number;
+  isCompleted: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }

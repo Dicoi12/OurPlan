@@ -1,4 +1,8 @@
-const BASE_URL = "https://localhost:7278/api";
+import { getCookie } from "./helper";
+
+// const BASE_URL = "https://dish-institutions-representative-idol.trycloudflare.com";
+const BASE_URL = "https://dish-institutions-representative-idol.trycloudflare.com/api";
+
 /**
  * Funcția pentru a construi query params dintr-un obiect payload.
  *
@@ -25,7 +29,8 @@ export const buildQueryParams = (payload?: Record<string, any>) => {
  * @param endpoint - segmentul de URL, ex: 'Objectives/getById'
  * @param method - metoda HTTP, ex: 'GET', 'POST', 'PUT'
  * @param body - corpul cererii, opțional, doar pentru metodele POST și PUT
- * @param query - obiect cu parametrii query, ex: {id: '123', name: 'example'}
+ * @param query - obiect cu parametrii query, ex: {id: '123', name: 'exampl
+ * e'}
  * @returns răspunsul cererii ca obiect JSON
  */
 const fetchApi = async (
@@ -43,7 +48,7 @@ const fetchApi = async (
   if (!isFormData) headers["Content-Type"] = "application/json";
   headers["Ngrok-Skip-Browser-Warning"] = "true";
    // ✅ Adaugă tokenul dacă există
-  const token = localStorage.getItem('token');
+  const token = getCookie('token');
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -59,11 +64,31 @@ const fetchApi = async (
   const response = await fetch(url, options);
 
   if (!response.ok) {
-    const errorData = await response.json();
+    let errorData;
+    try {
+      const text = await response.text();
+      errorData = text ? JSON.parse(text) : { message: `HTTP ${response.status}: ${response.statusText}` };
+    } catch {
+      errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+    }
     throw errorData;
   }
 
-  return response.json();
+  // Check if response has content
+  const text = await response.text();
+  
+  // If response is empty, return null
+  if (!text || text.trim() === "") {
+    return null;
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Failed to parse response as JSON:", text);
+    throw { message: "Invalid JSON response from server" };
+  }
 };
 
 export default fetchApi;

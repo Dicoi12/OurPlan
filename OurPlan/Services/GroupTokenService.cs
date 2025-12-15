@@ -23,9 +23,9 @@ namespace OurPlan.Services
 
         }
 
-        public async Task<ServiceResult<GroupTokenModel>> GenerateToken(int groupId)
+        public async Task<ServiceResult<string>> GenerateToken(int groupId)
         {
-            var result = new ServiceResult<GroupTokenModel>();
+            var result = new ServiceResult<string>();
 
             try
             {
@@ -53,13 +53,13 @@ namespace OurPlan.Services
                 {
                     GroupId = groupId,
                     Token = token,
-                    ExpiryDate = DateTime.UtcNow.AddMinutes(30)
+                    ExpiryDate = DateTime.Now.AddDays(1)
                 };
 
                 _context.GroupTokens.Add(entity);
                 await _context.SaveChangesAsync();
 
-                result.Result = _mapper.Map<GroupTokenModel>(entity);
+                result.Result = token;
 
 
             }
@@ -164,6 +164,7 @@ namespace OurPlan.Services
                 _context.GroupTokens.Remove(groupToken);
                 _context.UserGroups.Add(userGroup);
                 await _context.SaveChangesAsync();
+                await this.RemoveValidTokens(group.Id);
 
                 result.Result = true;
             }
