@@ -3,12 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OurPlan.Entity
 {
-    public enum TaskPriority
-    {
-        Low = 1,
-        Medium = 2,
-        High = 3
-    }
+  
     
     public class GroupTask
     {
@@ -30,11 +25,13 @@ namespace OurPlan.Entity
         public string? DueDate { get; set; }
         
         
-        [ForeignKey("GroupId")]
+        [ForeignKey(nameof(Group))]
         public int GroupId { get; set; }
         
-        [ForeignKey("CreatedByUserId")]
+        [ForeignKey(nameof(User))]
         public int CreatedByUserId { get; set; }
+        
+        public virtual User? User { get; set; }
         
         
         
