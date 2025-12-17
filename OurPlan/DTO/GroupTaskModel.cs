@@ -20,7 +20,7 @@ namespace OurPlan.DTO
         
         public DateTime StartDate { get; set; }
         
-        public string? DueDate { get; set; }
+        public DateTime? DueDate { get; set; }
         
         public int GroupId { get; set; }
         

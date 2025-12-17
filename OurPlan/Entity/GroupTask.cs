@@ -22,7 +22,7 @@ namespace OurPlan.Entity
         
         public DateTime StartDate { get; set; }
         
-        public string? DueDate { get; set; }
+        public DateTime? DueDate { get; set; }
         
         
         [ForeignKey(nameof(Group))]
