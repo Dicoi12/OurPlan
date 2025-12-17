@@ -69,6 +69,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IGroupTokenService, GroupTokenService>();
+builder.Services.AddScoped<IGroupTaskService, GroupTaskService>();
 builder.Services.AddHttpContextAccessor();
 // ==================== Controllers with Global [Authorize] ====================
 builder.Services.AddControllers(config =>
