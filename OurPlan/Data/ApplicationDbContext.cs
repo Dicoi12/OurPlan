@@ -3,6 +3,7 @@ using OurPlan.Entity;
 using OurPlan.Entity.Audit;
 using OurPlan.Services.Interfaces;
 using System;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
 
 namespace OurPlan.Data
 {
@@ -22,6 +23,7 @@ namespace OurPlan.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<UserGroup> UserGroups { get; set; }
         public DbSet<GroupToken> GroupTokens { get; set; }
+        public DbSet<GroupTask> GroupTasks { get; set; }
 
         public override int SaveChanges()
         {
